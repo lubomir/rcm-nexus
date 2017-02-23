@@ -39,6 +39,7 @@ setup(
     tests_require=[
       "Mock",
       "nose",
+      "responses",
     ],
     test_suite="tests",
     entry_points={

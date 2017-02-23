@@ -2,6 +2,7 @@ import yaml
 import getpass
 import subprocess
 import os
+import sys
 
 NEXUP_YAML='NEXUP_YAML'
 
@@ -38,6 +39,10 @@ class NexusConfig(object):
     def __repr__(self):
         return self.__str__()
 
+
+def die(error_msg):
+    print error_msg
+    sys.exit(1)
 
 def load(environment, cli_overrides=None):
 	config_path = get_config_path()

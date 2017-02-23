@@ -1,26 +1,13 @@
 # coding: utf-8
 from __future__ import unicode_literals
 
-from base import ConfigTest
+from base import NexupBaseTest
 from unittest import TestCase
 from nexup import config
 import os
 import yaml
 
-class TestConfigLoad(ConfigTest):
-
-    def create(self, path, content):
-        """
-        Create an empty file in the temporary directory, return the full path.
-        """
-        fpath = os.path.join(self.tempdir, path)
-        if not os.path.exists(os.path.dirname(fpath)):
-            os.makedirs(os.path.dirname(fpath))
-
-        with open(fpath, 'w') as f:
-            f.write(content)
-
-        return fpath
+class TestConfigLoad(NexupBaseTest):
 
     def test_minimal_from_default(self):
         url='http://nowhere.com/nexus'
@@ -29,7 +16,7 @@ class TestConfigLoad(ConfigTest):
                 config.URL: url
             }
         }
-        rc = self.create('.config/nexup/config.yaml', yaml.safe_dump(data, allow_unicode=False))
+        rc = self.write_config(data)
         nxconfig = config.load('test')
         self.assertEqual(nxconfig.url, url)
 
@@ -41,7 +28,7 @@ class TestConfigLoad(ConfigTest):
                 config.PREEMPTIVE_AUTH: True,
             }
         }
-        rc = self.create('.config/nexup/config.yaml', yaml.safe_dump(data, allow_unicode=False))
+        rc = self.write_config(data)
         nxconfig = config.load('test')
         self.assertEqual(nxconfig.url, url)
         self.assertEqual(nxconfig.preemptive_auth, True)
@@ -54,7 +41,7 @@ class TestConfigLoad(ConfigTest):
                 config.INTERACTIVE: True,
             }
         }
-        rc = self.create('.config/nexup/config.yaml', yaml.safe_dump(data, allow_unicode=False))
+        rc = self.write_config(data)
         nxconfig = config.load('test')
         self.assertEqual(nxconfig.url, url)
         self.assertEqual(nxconfig.interactive, True)
@@ -67,7 +54,7 @@ class TestConfigLoad(ConfigTest):
                 config.SSL_VERIFY: True,
             }
         }
-        rc = self.create('.config/nexup/config.yaml', yaml.safe_dump(data, allow_unicode=False))
+        rc = self.write_config(data)
         nxconfig = config.load('test')
         self.assertEqual(nxconfig.url, url)
         self.assertEqual(nxconfig.ssl_verify, True)
@@ -83,7 +70,7 @@ class TestConfigLoad(ConfigTest):
                 config.PASSWORD: password
             }
         }
-        rc = self.create('.config/nexup/config.yaml', yaml.safe_dump(data, allow_unicode=False))
+        rc = self.write_config(data)
         nxconfig = config.load('test')
         self.assertEqual(nxconfig.username, username)
         self.assertEqual(nxconfig.password, password)
@@ -99,7 +86,7 @@ class TestConfigLoad(ConfigTest):
                 config.PASSWORD: "@oracle:eval:echo %s" % password
             }
         }
-        rc = self.create('.config/nexup/config.yaml', yaml.safe_dump(data, allow_unicode=False))
+        rc = self.write_config(data)
         nxconfig = config.load('test')
         self.assertEqual(nxconfig.username, username)
         self.assertEqual(nxconfig.get_password(), password)

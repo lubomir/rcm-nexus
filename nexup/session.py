@@ -76,6 +76,8 @@ class Session(object):
 
         if config.username is not None:
             self.auth = requests.auth.HTTPBasicAuth(config.username, config.get_password())
+        else:
+            self.auth = None
 
         self.headers = {
             'Accept': 'application/xml',
@@ -114,7 +116,7 @@ class Session(object):
             raise Exception(msg)
         
     def head(self, path, headers=None, expect_status=200, ignore_404=False, fail=True):
-        uri = self.base_url + path
+        uri = self.config.url + path
         
 #         h = {'User-Agent': Session.USER_AGENT}
         h = {}
@@ -148,7 +150,7 @@ class Session(object):
         """
         h = self._combine_headers(headers)
         
-        uri = self.base_url + path
+        uri = self.config.url + path
         if self.debug:
             print "GET %s\n%s" % (uri,h)
             
@@ -175,7 +177,7 @@ class Session(object):
            
            Return response.
         """
-        uri = self.base_url + path
+        uri = self.config.url + path
         h = {}
         h = self._combine_headers(headers, h)
         
@@ -207,7 +209,7 @@ class Session(object):
         """
         h = self._combine_headers(headers)
         
-        uri = self.base_url + path
+        uri = self.config.url + path
         if self.debug:
             print "POST %s\n%s" % (uri,h)
             print "Request body:\n", body
@@ -237,7 +239,7 @@ class Session(object):
         """
         h = self._combine_headers(headers)
         
-        uri = self.base_url + path
+        uri = self.config.url + path
         if self.debug:
             print "PUT %s\n%s" % (uri,h)
             print "Request body:\n", body
