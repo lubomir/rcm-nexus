@@ -5,6 +5,7 @@ from base import ConfigTest
 from unittest import TestCase
 from nexup import config
 import os
+import yaml
 
 class TestConfigLoad(ConfigTest):
 
@@ -22,13 +23,32 @@ class TestConfigLoad(ConfigTest):
         return fpath
 
     def test_minimal_from_default(self):
-        yaml="""
-            test:
-                url: http://nowhere.com/nexus
-            """
-        rc = self.create('.config/nexup/config.yaml', yaml)
+        url='http://nowhere.com/nexus'
+        data={
+            'test': {
+                config.URL: url
+            }
+        }
+        rc = self.create('.config/nexup/config.yaml', yaml.dumps(data))
         nxconfig = config.load('test')
-        print nxconfig.url
+        self.assertEqual(nxconfig.url, url)
+
+    def test_with_username_and_password(self):
+        user='myuser'
+        password='mypassword'
+        url='http://nowhere.com/nexus'
+        data={
+            'test': {
+                config.URL: url,
+                config.USERNAME: usenrame,
+                config.PASSWORD: password
+            }
+        }
+        rc = self.create('.config/nexup/config.yaml', yaml.dumps(data))
+        nxconfig = config.load('test')
+        self.assertEqual(nxconfig.username, user)
+        self.assertEqual(nxconfig.password, password)
+
 
 class TestOracleEval(TestCase):
 

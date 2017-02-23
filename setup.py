@@ -37,7 +37,7 @@ setup(
     tests_require=[
       "Mock",
       "nose",
-      "responses"
+      "PyYAML"
     ],
     entry_points="""
       [console_scripts]
