@@ -10,7 +10,7 @@ class ConfigTest(unittest.TestCase):
     """
     def setUp(self):
         self.old_environ = os.environ.copy()
-        self.tempdir = tempfile.mkdtemp(prefix='bugwarrior')
+        self.tempdir = tempfile.mkdtemp(prefix='nexup')
 
         # Create temporary config files.
         self.taskrc = os.path.join(self.tempdir, '.taskrc')

@@ -29,25 +29,80 @@ class TestConfigLoad(ConfigTest):
                 config.URL: url
             }
         }
-        rc = self.create('.config/nexup/config.yaml', yaml.dumps(data))
+        rc = self.create('.config/nexup/config.yaml', yaml.safe_dump(data, allow_unicode=False))
         nxconfig = config.load('test')
         self.assertEqual(nxconfig.url, url)
 
+    def test_preemptive_auth(self):
+        url='http://nowhere.com/nexus'
+        data={
+            'test': {
+                config.URL: url,
+                config.PREEMPTIVE_AUTH: True,
+            }
+        }
+        rc = self.create('.config/nexup/config.yaml', yaml.safe_dump(data, allow_unicode=False))
+        nxconfig = config.load('test')
+        self.assertEqual(nxconfig.url, url)
+        self.assertEqual(nxconfig.preemptive_auth, True)
+
+    def test_interactive(self):
+        url='http://nowhere.com/nexus'
+        data={
+            'test': {
+                config.URL: url,
+                config.INTERACTIVE: True,
+            }
+        }
+        rc = self.create('.config/nexup/config.yaml', yaml.safe_dump(data, allow_unicode=False))
+        nxconfig = config.load('test')
+        self.assertEqual(nxconfig.url, url)
+        self.assertEqual(nxconfig.interactive, True)
+
+    def test_ssl_verify(self):
+        url='http://nowhere.com/nexus'
+        data={
+            'test': {
+                config.URL: url,
+                config.SSL_VERIFY: True,
+            }
+        }
+        rc = self.create('.config/nexup/config.yaml', yaml.safe_dump(data, allow_unicode=False))
+        nxconfig = config.load('test')
+        self.assertEqual(nxconfig.url, url)
+        self.assertEqual(nxconfig.ssl_verify, True)
+
     def test_with_username_and_password(self):
-        user='myuser'
+        username='myuser'
         password='mypassword'
         url='http://nowhere.com/nexus'
         data={
             'test': {
                 config.URL: url,
-                config.USERNAME: usenrame,
+                config.USERNAME: username,
                 config.PASSWORD: password
             }
         }
-        rc = self.create('.config/nexup/config.yaml', yaml.dumps(data))
+        rc = self.create('.config/nexup/config.yaml', yaml.safe_dump(data, allow_unicode=False))
         nxconfig = config.load('test')
-        self.assertEqual(nxconfig.username, user)
+        self.assertEqual(nxconfig.username, username)
         self.assertEqual(nxconfig.password, password)
+
+    def test_with_username_and_oracle_password(self):
+        username='myuser'
+        password='mypassword'
+        url='http://nowhere.com/nexus'
+        data={
+            'test': {
+                config.URL: url,
+                config.USERNAME: username,
+                config.PASSWORD: "@oracle:eval:echo %s" % password
+            }
+        }
+        rc = self.create('.config/nexup/config.yaml', yaml.safe_dump(data, allow_unicode=False))
+        nxconfig = config.load('test')
+        self.assertEqual(nxconfig.username, username)
+        self.assertEqual(nxconfig.get_password(), password)
 
 
 class TestOracleEval(TestCase):

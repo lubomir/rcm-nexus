@@ -1,8 +1,10 @@
+#!/usr/bin/env python2
+
 from setuptools import setup, find_packages
 
 version='0.0.1'
 
-f = open('nexup/README.rst')
+f = open('README.rst')
 long_description = f.read().strip()
 long_description = long_description.split('split here', 1)[1]
 f.close()
@@ -37,12 +39,13 @@ setup(
     tests_require=[
       "Mock",
       "nose",
-      "PyYAML"
     ],
-    entry_points="""
-      [console_scripts]
-      nexup-push = nexup:push
-      nexup-rollback = nexup:rollback
-    """
+    test_suite="tests",
+    entry_points={
+      'console_scripts': [
+        'nexup-push = nexup:push',
+        'nexup-rollback = nexup:rollback',
+      ],
+    }
 )
 

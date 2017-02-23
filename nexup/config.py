@@ -21,7 +21,7 @@ class NexusConfig(object):
         self.password = data.get(PASSWORD, None)
         self.interactive = data.get(INTERACTIVE, True)
 
-    def get_password():
+    def get_password(self):
         if self.password and self.password.startswith("@oracle:"):
             return eval_password(self.username, oracle=self.password, interactive=self.interactive)
         return self.password
