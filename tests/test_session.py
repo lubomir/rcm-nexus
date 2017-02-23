@@ -5,6 +5,7 @@ import nexup
 import responses
 import os
 import yaml
+import traceback
 
 TEST_BASEURL='http://localhost:8080/nexus'
 
@@ -114,4 +115,38 @@ class TestSession(NexupBaseTest):
 			self.assertEqual(len(responses.calls), 1)
 
 
+	@responses.activate
+	def test_session_head_dont_ignore_404_no_fail(self):
+		conf = self.create_and_load_conf()
+		path = '/foo/bar'
+
+		responses.add(responses.HEAD, conf.url + path, status=404)
+
+		sess = nexup.session.Session(conf)
+
+		try:
+			sess.head(path, ignore_404=False, fail=False)
+		except:
+			print traceback.format_exc()
+			self.fail("Should have suppressed Exception on 404.")
+		finally:
+			self.assertEqual(len(responses.calls), 1)
+
+
+	@responses.activate
+	def test_session_head_custom_headers(self):
+		conf = self.create_and_load_conf()
+		path = '/foo/bar'
+
+		def callbk(req):
+			return (203,req.headers,'')
+
+		responses.add_callback(responses.HEAD, conf.url + path, callback=callbk)
+
+		sess = nexup.session.Session(conf)
+
+		resp,_content=sess.head(path, expect_status=203, headers={'my-header': 'foo'})
+
+		self.assertEqual(resp.status_code, 203)
+		self.assertEqual(resp.headers.get('my-header'), 'foo')
 
