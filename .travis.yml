@@ -1,0 +1,13 @@
+sudo: false
+language: python
+python:
+    - "2.7"
+install: pip install tox-travis python-coveralls
+script: tox
+after_success: coveralls
+notifications:
+    email: true
+    irc:
+        - "irc.freenode.net#jdcasey"
+    on_success: change
+    on_failure: always

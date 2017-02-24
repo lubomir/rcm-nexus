@@ -2,6 +2,7 @@ import yaml
 import getpass
 import subprocess
 import os
+import sys
 
 NEXUP_YAML='NEXUP_YAML'
 
@@ -21,7 +22,7 @@ class NexusConfig(object):
         self.password = data.get(PASSWORD, None)
         self.interactive = data.get(INTERACTIVE, True)
 
-    def get_password():
+    def get_password(self):
         if self.password and self.password.startswith("@oracle:"):
             return eval_password(self.username, oracle=self.password, interactive=self.interactive)
         return self.password
@@ -38,6 +39,10 @@ class NexusConfig(object):
     def __repr__(self):
         return self.__str__()
 
+
+def die(error_msg):
+    print error_msg
+    sys.exit(1)
 
 def load(environment, cli_overrides=None):
 	config_path = get_config_path()

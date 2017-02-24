@@ -2,15 +2,16 @@ import os
 import tempfile
 import shutil
 import unittest
+import yaml
 from nexup import config
 
-class ConfigTest(unittest.TestCase):
+class NexupBaseTest(unittest.TestCase):
     """
     Creates config files, configures the environment, and cleans up afterwards.
     """
     def setUp(self):
         self.old_environ = os.environ.copy()
-        self.tempdir = tempfile.mkdtemp(prefix='bugwarrior')
+        self.tempdir = tempfile.mkdtemp(prefix='nexup')
 
         # Create temporary config files.
         self.taskrc = os.path.join(self.tempdir, '.taskrc')
@@ -28,4 +29,24 @@ class ConfigTest(unittest.TestCase):
     def tearDown(self):
         shutil.rmtree(self.tempdir, ignore_errors=True)
         os.environ = self.old_environ
+
+    def write_config(self, conf):
+        """
+        Create an empty file in the temporary directory, return the full path.
+        """
+        path = '.config/nexup/config.yaml'
+        fpath = os.path.join(self.tempdir, path)
+        if not os.path.exists(os.path.dirname(fpath)):
+            os.makedirs(os.path.dirname(fpath))
+
+        with open(fpath, 'w') as f:
+            yml = yaml.safe_dump(conf)
+            #print """Writing config to: %s
+            #
+            #%s
+            #""" % (fpath, yml)
+
+            f.write(yml)
+
+        return fpath
 
