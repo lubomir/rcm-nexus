@@ -9,6 +9,17 @@ long_description = f.read().strip()
 long_description = long_description.split('split here', 1)[1]
 f.close()
 
+test_deps=[
+    "Mock",
+    "nose",
+    "responses",
+  ]
+
+extras = {
+  'test':test_deps,
+  'build':['tox']
+}
+
 setup(
     name='nexup',
     version=version,
@@ -36,11 +47,8 @@ setup(
       "click",
       "PyYAML"
     ],
-    tests_require=[
-      "Mock",
-      "nose",
-      "responses",
-    ],
+    tests_require=test_deps,
+    extras_require=extras,
     test_suite="tests",
     entry_points={
       'console_scripts': [
