@@ -53,17 +53,6 @@ def nexus_boolean(value):
 def python_boolean(value):
     return True if str(value) in ('True', 'true') else False
 
-def run(cmd, fail=True):
-    """Run the specified command. If fail == True, and a non-zero exit value 
-       is returned from the process, then exit the program
-    """
-    print cmd
-    ret = os.system(cmd)
-    if ret != 0:
-        print 'Error running command'
-        if fail:
-            sys.exit(1)
-
 class Session(object):
 #     USER_AGENT = 'curl/7.19.7 (x86_64-redhat-linux-gnu) libcurl/7.19.7 NSS/3.14.3.0 zlib/1.2.3 libidn/1.18 libssh2/1.4.2'
     
@@ -105,7 +94,7 @@ class Session(object):
         return result
     
     def exists(self, path, fail=True):
-        response,_content = self.head(path, ignore_404=True)
+        response,_content = self.head(path, ignore_404=True, fail=False)
         
         if response.status_code == 200:
             return True
@@ -113,7 +102,11 @@ class Session(object):
             return False
         else:
             msg= "Existence check for '%s' failed: %s" % (path, response.status_code)
-            raise Exception(msg)
+            if fail:
+                raise Exception(msg)
+            else:
+                print msg
+            return False
         
     def head(self, path, headers=None, expect_status=200, ignore_404=False, fail=True):
         uri = self.config.url + path
@@ -140,6 +133,7 @@ class Session(object):
                 raise Exception(msg)
             else:
                 print msg
+            return (response,None)
         
     def get(self, path, headers=None, expect_status=200, ignore_404=False, fail=True):
         """Issue a GET request to the Nexus server, on the given path. Expect a response status of 200, 
@@ -169,6 +163,7 @@ class Session(object):
                 raise Exception(msg)
             else:
                 print msg
+            return (response,None)
                 
     def delete(self, path, headers=None, expect_status=204, ignore_404=False, fail=True):
         """Issue a DELETE request to the Nexus server, on the given path. Expect a response status of 204 (No Content), 
@@ -199,6 +194,7 @@ class Session(object):
                 raise Exception(msg)
             else:
                 print msg
+            return (response,None)
                 
     def post(self, path, body, headers=None, expect_status=201, ignore_404=False, fail=True):
         """Issue a POST request to the Nexus server, on the given path. Expect a response status of 201 (Created), 
@@ -214,7 +210,7 @@ class Session(object):
             print "POST %s\n%s" % (uri,h)
             print "Request body:\n", body
             
-        response = requests.post(uri, 'POST', data=body, headers=h, verify=self.config.ssl_verify, auth=self.auth)
+        response = requests.post(uri, data=body, headers=h, verify=self.config.ssl_verify, auth=self.auth)
         
         if self.debug:
             print "Response data:\n %s\n\nBody:\n%s\n" % (response, response.text)
@@ -229,6 +225,7 @@ class Session(object):
                 raise Exception(msg)
             else:
                 print msg
+            return (response,None)
                 
     def put(self, path, body, headers=None, expect_status=200, ignore_404=False, fail=True):
         """Issue a PUT request to the Nexus server, on the given path. Expect a response status of 200, 
@@ -259,4 +256,5 @@ class Session(object):
                 raise Exception(msg)
             else:
                 print msg
+            return (response,None)
         
