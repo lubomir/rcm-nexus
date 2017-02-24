@@ -1,10 +1,15 @@
 sudo: false
 language: python
 python:
-    - 2.7
-install:
-    - pip install pep8 python-coveralls
-script:
-    - nosetests --with-coverage
-after_success:
-    - coveralls
+    - "2.7"
+    - "3.4"
+    - "3.5"
+install: pip install tox-travis python-coveralls
+script: tox
+after_success: coveralls
+notifications:
+    email: true
+    irc:
+        - "irc.freenode.net#jdcasey"
+    on_success: change
+    on_failure: always

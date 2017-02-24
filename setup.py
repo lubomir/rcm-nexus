@@ -1,6 +1,13 @@
 #!/usr/bin/env python2
 
 from setuptools import setup, find_packages
+import sys
+
+# handle python 3
+if sys.version_info >= (3,):
+    use_2to3 = True
+else:
+    use_2to3 = False
 
 version='0.0.1'
 
@@ -17,10 +24,12 @@ test_deps=[
 
 extras = {
   'test':test_deps,
-  'build':['tox']
+  'build':['tox'],
+  'ci':['coverage']
 }
 
 setup(
+    use_2to3=use_2to3,
     name='nexup',
     version=version,
     long_description=long_description,
