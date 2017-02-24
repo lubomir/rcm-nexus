@@ -5,6 +5,6 @@ python:
 install:
     - pip install pep8 python-coveralls
 script:
-    - ./setup.py test --with-coverage
+    - ./setup.py test
 after_success:
     - coveralls
