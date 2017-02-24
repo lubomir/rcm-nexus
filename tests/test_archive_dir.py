@@ -1,23 +1,11 @@
-from base import NexupBaseTest
 from nexup import archive
+from test_archive import ArchiveTest
 import tempfile
 import os
 from random import randint
 import zipfile
 
-class ArchiveTest(NexupBaseTest):
-
-	def write_dir(self, srcdir, paths, content=None):
-		for fname in paths:
-			path = os.path.join(srcdir, fname)
-			os.makedirs(os.path.dirname(path))
-			with open(path, 'w') as f:
-				if content is None:
-					for i in range(randint(1,10)):
-						f.write(self.words[randint(1,len(self.words))])
-						f.write(' ')
-				else:
-					f.write(content)
+class ArchiveZipest(ArchiveTest):
 
 	def test_small(self):
 		self.load_words()
