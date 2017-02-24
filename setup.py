@@ -29,6 +29,7 @@ extras = {
 }
 
 setup(
+    zip_safe=True,
     use_2to3=use_2to3,
     name='nexup',
     version=version,
@@ -48,8 +49,6 @@ setup(
     url='https://github.com/release-engineering/nexup',
     license='GPLv3+',
     packages=find_packages(exclude=['ez_setup', 'examples', 'tests']),
-    include_package_data=True,
-    zip_safe=False,
     install_requires=[
       "requests",
       "lxml",

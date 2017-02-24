@@ -3,4 +3,5 @@
 venv
 *.pyc
 .coverage
+coverage
 .tox
