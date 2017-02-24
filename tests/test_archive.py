@@ -3,7 +3,7 @@ import zipfile
 import os
 from random import randint
 
-class ArchiveTest(NexupBaseTest):
+class ArchiveBaseTest(NexupBaseTest):
 
 	def write_zip(self, src_zip, paths, content=None):
 		zf = zipfile.ZipFile(src_zip, mode='w')

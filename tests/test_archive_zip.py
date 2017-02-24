@@ -1,11 +1,11 @@
 from nexup import archive
-from test_archive import ArchiveTest
+from test_archive import ArchiveBaseTest
 import tempfile
 import os
 from random import randint
 import zipfile
 
-class ArchiveZipest(ArchiveTest):
+class ArchiveZipest(ArchiveBaseTest):
 
 	def test_small(self):
 		self.load_words()
