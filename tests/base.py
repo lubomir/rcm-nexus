@@ -5,6 +5,8 @@ import unittest
 import yaml
 from nexup import config
 
+WORDS = ['/usr/share/dict/words', '/usr/dict/words']
+
 class NexupBaseTest(unittest.TestCase):
     """
     Creates config files, configures the environment, and cleans up afterwards.
@@ -29,6 +31,13 @@ class NexupBaseTest(unittest.TestCase):
     def tearDown(self):
         shutil.rmtree(self.tempdir, ignore_errors=True)
         os.environ = self.old_environ
+
+    def load_words(self):
+        self.words = []
+        for w in WORDS:
+            if os.path.exists(w):
+                with open(w) as f:
+                    self.words.extend([line.rstrip() for line in f.readlines()])
 
     def write_config(self, conf):
         """
