@@ -1,5 +1,5 @@
 from base import NexupBaseTest
-import archive
+from nexup import archive
 import tempfile
 import os
 from random import randint

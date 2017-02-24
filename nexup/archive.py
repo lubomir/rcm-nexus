@@ -36,6 +36,7 @@ def create_partitioned_zips_from_zip(src, out_dir, max_count=MAX_COUNT, max_size
 	zips = Zipper(out_dir, max_count, max_size)
 	zf = zipfile.ZipFile(src)
 	for info in zf.infolist():
+
 		# print "Path: %s (uncompressed size: %s)" % (info.filename, info.file_size)
 		zips.append(info.filename, info.file_size, lambda: zf.read(info.filename) )
 
