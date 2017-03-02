@@ -34,18 +34,21 @@ def push_zip(session, repo_key, zip_file, delete_first=False):
             delete_param = '?delete=true'
             
         url = COMPRESSED_CONTENT_PATH.format(key=repo_key, delete=delete_param)
-        session.post(url, f)
+        if session.debug is True:
+            print "POSTing: %s" % url
+        session.post(url, f, expect_status=201)
 
 def repo_exists(session, repo_key):
     return session.exists( NAMED_REPO_PATH.format(key=repo_key) )
 
 def load(session, key, ignore_missing=True):
     response, xml = session.get(NAMED_REPO_PATH.format(key=key), ignore_404=ignore_missing)
-    if ignore_missing and response.status == 404:
+    if ignore_missing and response.status_code == 404:
         return None
     
     doc = objectify.fromstring(xml)
-    return Repository(doc.data.id, doc.data.name)._set_xml_obj(doc)
+    # return Repository(doc.data.id, doc.data.name)._set_xml_obj(doc)
+    return Repository(doc)
 
 def load_all(session, name_pattern=None):
     response, xml = session.get(REPOS_PATH)
@@ -72,7 +75,7 @@ def load_all(session, name_pattern=None):
         if name_re is not None:
             match = name_re.match(name)
         
-        if match is not None:
+        if name_re is None or match is not None:
             rid=child.xpath('id/text()')
             if len(rid) < 1:
                 if session.debug is True:
@@ -87,7 +90,8 @@ def load_all(session, name_pattern=None):
             child = r
             
             doc = objectify.fromstring(etree.tostring(child))
-            repos.append(Repository(rid, name)._set_xml_obj(doc))
+            # repos.append(Repository(rid, name)._set_xml_obj(doc))
+            repos.append(Repository(doc))
             
             if session.debug is True:
                 print "+ %s" % name
@@ -111,23 +115,35 @@ class Repository(object):
        methods for accessing repository configuration without knowing all of the xml
        structure.
     """
-    def __init__(self, key, name):
-        self.new = True
-        self.xml = objectify.Element('repository')
-        self.data = etree.SubElement(self.xml, 'data')
-        self.data.id=key
-        self.data.name=name
-        self.data.repoType = 'hosted'
-        self.data.writePolicy = WRITE_POLICIES.read_write
-        self.data.exposed = 'true'
-        self.data.browseable = 'true'
-        self.data.indexable = 'true'
-        self.data.downloadRemoteIndexes = 'false'
-        self.data.provider = 'maven2'
-        self.data.format = 'maven2'
-        self.data.providerRole='org.sonatype.nexus.proxy.repository.Repository'
-        self.data.checksumPolicy = CHECKSUM_POLICIES.warn
-        self.data.repoPolicy = REPO_POLICIES.release
+    def __init__(self, key_or_doc, name=None):
+        if type(key_or_doc) is objectify.ObjectifiedElement:
+            self.new=False
+            self._set_xml_obj(key_or_doc)
+        elif name is None:
+            raise Exception('Invalid new repository; must supply key AND name (name is missing)')
+        else:
+            self.new = True
+            self.xml = objectify.Element('repository')
+            self.data = etree.SubElement(self.xml, 'data')
+            self.data.id=key_or_doc
+            self.data.name=name
+            self.data.repoType = 'hosted'
+            self.data.writePolicy = WRITE_POLICIES.read_write
+            self.data.exposed = 'true'
+            self.data.browseable = 'true'
+            self.data.indexable = 'true'
+            self.data.downloadRemoteIndexes = 'false'
+            self.data.provider = 'maven2'
+            self.data.format = 'maven2'
+            self.data.providerRole='org.sonatype.nexus.proxy.repository.Repository'
+            self.data.checksumPolicy = CHECKSUM_POLICIES.warn
+            self.data.repoPolicy = REPO_POLICIES.release
+
+    def __str__(self):
+        return "Repository: %s" % self.data.id
+
+    def __repr__(self):
+        return self.__str__();
     
     def _set_xml_string(self, xml):
         self.xml = objectify.fromstring(xml)
@@ -146,7 +162,7 @@ class Repository(object):
         return self
         
     def set_hosted(self, storage_location=None):
-        self.data.repoType = 'hosted'
+        self.data.repoType = REPO_TYPES.hosted
         
         if hasattr(self.data, 'remoteStorage'):
             self.data.remove(self.data.remoteStorage)
@@ -161,32 +177,34 @@ class Repository(object):
         return self
     
     def set_remote(self, url):
-        self.set('remoteStorage/remoteStorageUrl', url)
-        self.data.repoType = 'remote'
-        
-        if hasattr(self.data, 'writePolicy'):
-            self.data.remove(self.data.writePolicy)
+        if hasattr(self.data, 'remoteStorage'):
+            self.data.remove(self.data.remoteStorage)
             
-        self.data.downloadRemoteIndexes = 'true'
+        self.set('remoteStorage/remoteStorageUrl', url)
+        self.data.repoType = REPO_TYPES.remote
+        
+        if hasattr(self.data, 'overrideLocalStorageUrl'):
+            self.data.remove(self.data.overrideLocalStorageUrl)
+
         return self
     
     def set_exposed(self, exposed):
-        exposed = nexus_boolean(exposed)
+        # exposed = nexus_boolean(exposed)
         self.data.exposed = exposed
         return self
     
     def set_browseable(self, browse):
-        browse = nexus_boolean(browse)
+        # browse = nexus_boolean(browse)
         self.data.browseable = browse
         return self
     
     def set_indexable(self, index):
-        index = nexus_boolean(index)
+        # index = nexus_boolean(index)
         self.data.indexable = index
         return self
     
     def set_download_remote_indexes(self, download):
-        download = self._get_nexus_boolean(download)
+        # download = nexus_boolean(download)
         self.data.downloadRemoteIndexes = download
         return self
     
@@ -234,6 +252,7 @@ class Repository(object):
     
     def render(self, pretty_print=True):
         objectify.deannotate(self.xml, xsi_nil=True)
+        etree.cleanup_namespaces(self.xml)
         return etree.tostring(self.xml, pretty_print=pretty_print)
     
     def content_uri(self):

@@ -1,0 +1,28 @@
+<repository>
+  <data>
+    <contentResourceURI>http://localhost:8081/nexus/content/repositories/central</contentResourceURI>
+    <id>central</id>
+    <name>Central</name>
+    <provider>maven2</provider>
+    <providerRole>org.sonatype.nexus.proxy.repository.Repository</providerRole>
+    <format>maven2</format>
+    <repoType>proxy</repoType>
+    <exposed>true</exposed>
+    <writePolicy>READ_ONLY</writePolicy>
+    <browseable>true</browseable>
+    <indexable>true</indexable>
+    <notFoundCacheTTL>1440</notFoundCacheTTL>
+    <repoPolicy>RELEASE</repoPolicy>
+    <checksumPolicy>WARN</checksumPolicy>
+    <downloadRemoteIndexes>false</downloadRemoteIndexes>
+    <defaultLocalStorageUrl>file:/sonatype-work/storage/central</defaultLocalStorageUrl>
+    <remoteStorage>
+      <remoteStorageUrl>https://repo1.maven.org/maven2/</remoteStorageUrl>
+    </remoteStorage>
+    <fileTypeValidation>true</fileTypeValidation>
+    <artifactMaxAge>-1</artifactMaxAge>
+    <metadataMaxAge>1440</metadataMaxAge>
+    <itemMaxAge>1440</itemMaxAge>
+    <autoBlockActive>true</autoBlockActive>
+  </data>
+</repository>

@@ -1,12 +1,12 @@
 
-from test_session import TestSession
+from base import NexupBaseTest
 import nexup
 import responses
 import os
 import yaml
 import traceback
 
-class TestSessionPost(TestSession):
+class TestSessionPost(NexupBaseTest):
 	
 	@responses.activate
 	def test_default(self):
