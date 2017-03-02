@@ -33,23 +33,29 @@ def load(session, group_key, ignore_missing=True):
         return None
     
     doc = objectify.fromstring(group_xml)
-    return Group(doc.data.id, doc.data.name, debug=session.debug)._set_xml_obj(doc)
+    return Group(doc)
 
 class Group(object):
     """Convenience wrapper class around group xml document (via objectify.fromstring(..)).
        Provides methods for accessing data without knowledge of the xml document structure.
     """
-    def __init__(self, key, name, debug=False):
-        self.new = True
-        self.debug = debug
-        self.xml = objectify.Element('repo-group')
-        self.data = etree.SubElement(self.xml, 'data')
-        self.data.id = key
-        self.data.name = name
-        self.data.provider='maven2'
-        self.data.format='maven2'
-        self.data.repoType = 'group'
-        self.data.exposed = nexus_boolean(True)
+    def __init__(self, key_or_doc, name, debug=False):
+        if type(key_or_doc) is objectify.ObjectifiedElement:
+            self.new=False
+            self._set_xml_obj(key_or_doc)
+        elif name is None:
+            raise Exception('Invalid new repository; must supply key AND name (name is missing)')
+        else:
+            self.new = True
+            self.debug = debug
+            self.xml = objectify.Element('repo-group')
+            self.data = etree.SubElement(self.xml, 'data')
+            self.data.id = key_or_doc
+            self.data.name = name
+            self.data.provider='maven2'
+            self.data.format='maven2'
+            self.data.repoType = 'group'
+            self.data.exposed = nexus_boolean(True)
     
     def get_exposed(self):
         exposed = self.data.exposed
@@ -136,6 +142,8 @@ class Group(object):
         return self
     
     def render(self, pretty_print=True):
+        objectify.deannotate(self.xml, xsi_nil=True)
+        etree.cleanup_namespaces(self.xml)
         return etree.tostring(self.xml, pretty_print=pretty_print)
     
     def members(self):
