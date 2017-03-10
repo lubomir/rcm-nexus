@@ -12,20 +12,41 @@ PASSWORD='password'
 SSL_VERIFY='ssl-verify'
 PREEMPTIVE_AUTH='preemptive-auth'
 INTERACTIVE='interactive'
+PROFILE_MAP = 'profile-map'
+
+GA_PROFILE = 'ga'
+EA_PROFILE = 'ea'
 
 class NexusConfig(object):
-    def __init__(self, data):
+    def __init__(self, name, data):
+        self.name = name
         self.url = data[URL]
         self.ssl_verify = data.get(SSL_VERIFY, True)
         self.preemptive_auth = data.get(PREEMPTIVE_AUTH, False)
         self.username = data.get(USERNAME, None)
         self.password = data.get(PASSWORD, None)
         self.interactive = data.get(INTERACTIVE, True)
+        self.profile_map = data.get(PROFILE_MAP, {})
 
     def get_password(self):
         if self.password and self.password.startswith("@oracle:"):
             return eval_password(self.username, oracle=self.password, interactive=self.interactive)
         return self.password
+
+    def get_profile_id(self, product, is_ga):
+        profiles = self.profile_map.get(product)
+        if profiles is None:
+            raise Exception( "Product %s not configured in 'profile-maps' of configuration: %s (case-sensitive)" % (product, config.name) )
+
+        quality_level = GA_PROFILE if is_ga is True else EA_PROFILE
+        profile_id = profiles.get(quality_level)
+        if profile_id is None:
+            raise Exception( 
+                "ProfileID not configured for quality level: %s in 'profile-maps' of configuration: %s for the product: '%s' (case-sensitive)" % 
+                (quality_level, config.name, product) )
+
+        return profile_id
+
 
     def __str__(self):
         return """RCMNexusConfig [
@@ -57,7 +78,7 @@ def load(environment, cli_overrides=None):
 	if cli_overrides is not None:
 		data.update(cli_overrides)
 
-	return NexusConfig(data)
+	return NexusConfig(environment, data)
 
 
 #############################################################################

@@ -14,6 +14,10 @@
 from lxml import (objectify,etree)
 from session import (nexus_boolean, python_boolean)
 import repo as repos
+import os
+import re
+
+GROUP_CONTENT_URI_RE='(.+)/content/groups/.+'
 
 GROUPS_PATH = '/service/local/repo_groups'
 NAMED_GROUP_PATH = GROUPS_PATH + '/{key}'
@@ -28,30 +32,36 @@ def load(session, group_key, ignore_missing=True):
     path = NAMED_GROUP_PATH.format(key=group_key)
     response, group_xml = session.get(path, ignore_404=ignore_missing)
     
-    if ignore_missing and response.status == 404:
+    if ignore_missing and response.status_code == 404:
 #        print "Group %s not found. Returning None" % group_key
         return None
     
     doc = objectify.fromstring(group_xml)
-    return Group(doc.data.id, doc.data.name, debug=session.debug)._set_xml_obj(doc)
+    return Group(doc)
 
 class Group(object):
     """Convenience wrapper class around group xml document (via objectify.fromstring(..)).
        Provides methods for accessing data without knowledge of the xml document structure.
     """
-    def __init__(self, key, name, debug=False):
-        self.new = True
-        self.debug = debug
-        self.xml = objectify.Element('repo-group')
-        self.data = etree.SubElement(self.xml, 'data')
-        self.data.id = key
-        self.data.name = name
-        self.data.provider='maven2'
-        self.data.format='maven2'
-        self.data.repoType = 'group'
-        self.data.exposed = nexus_boolean(True)
+    def __init__(self, key_or_doc, name=None, debug=False):
+        if type(key_or_doc) is objectify.ObjectifiedElement:
+            self.new=False
+            self._set_xml_obj(key_or_doc)
+        elif name is None:
+            raise Exception('Invalid new repository; must supply key AND name (name is missing)')
+        else:
+            self.new = True
+            self.debug = debug
+            self.xml = objectify.Element('repo-group')
+            self.data = etree.SubElement(self.xml, 'data')
+            self.data.id = key_or_doc
+            self.data.name = name
+            self.data.provider='maven2'
+            self.data.format='maven2'
+            self.data.repoType = 'group'
+            self.data.exposed = nexus_boolean(True)
     
-    def get_exposed(self):
+    def exposed(self):
         exposed = self.data.exposed
         pyval = python_boolean(exposed)
         if self.debug is True:
@@ -59,7 +69,8 @@ class Group(object):
         return pyval
     
     def set_exposed(self, exposed):
-        self.data.exposed = nexus_boolean(exposed)
+        # self.data.exposed = nexus_boolean(exposed)
+        self.data.exposed = exposed
         return self
     
     def _set_xml_string(self, xml):
@@ -79,11 +90,14 @@ class Group(object):
         self._backup_xml = self.render()
         return self
     
-    def get_name(self):
+    def name(self):
         return self.data.name
     
-    def get_id(self):
+    def id(self):
         return self.data.id
+
+    def content_uri(self):
+        return self.data.contentResourceURI
     
     def set_name(self, name):
         self.data.name = name
@@ -115,7 +129,16 @@ class Group(object):
             member = etree.SubElement(members, 'repo-group-member')
             member.id = repo.data.id
             member.name = repo.data.name
-            member.resourceURI = repo.data.contentResourceURI
+            print "Append: '%s' to group content URI: '%s'" % (repo.data.id, self.data.contentResourceURI)
+
+            match = re.search(GROUP_CONTENT_URI_RE, str(self.content_uri()))
+            base_url = match.group(1)
+
+            repo_id = str(repo.data.id)
+
+            resource_uri = "%s%s/%s" % (base_url, NAMED_GROUP_PATH.format(key=self.id()), repo_id)
+
+            member.resourceURI = resource_uri
             
             if session.debug:
                 print "Added member: %s" % repo_key
@@ -136,6 +159,8 @@ class Group(object):
         return self
     
     def render(self, pretty_print=True):
+        objectify.deannotate(self.xml, xsi_nil=True)
+        etree.cleanup_namespaces(self.xml)
         return etree.tostring(self.xml, pretty_print=pretty_print)
     
     def members(self):

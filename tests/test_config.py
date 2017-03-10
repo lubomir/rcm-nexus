@@ -20,6 +20,46 @@ class TestConfigLoad(NexupBaseTest):
         nxconfig = config.load('test')
         self.assertEqual(nxconfig.url, url)
 
+    def test_get_profile_id_ga(self):
+        url='http://nowhere.com/nexus'
+        ga_profile = '0123456789'
+        data={
+            'test': {
+                config.URL: url,
+                config.PROFILE_MAP: {
+                    'eap': {
+                        config.GA_PROFILE: str(ga_profile),
+                        config.EA_PROFILE: '9876543210'
+                    }
+                }
+            }
+        }
+        rc = self.write_config(data)
+        nxconfig = config.load('test')
+        profile_id = nxconfig.get_profile_id('eap', is_ga=True)
+
+        self.assertEqual(profile_id, ga_profile)
+
+    def test_get_profile_id_ea(self):
+        url='http://nowhere.com/nexus'
+        ea_profile = '0123456789'
+        data={
+            'test': {
+                config.URL: url,
+                config.PROFILE_MAP: {
+                    'eap': {
+                        config.GA_PROFILE: '9876543210',
+                        config.EA_PROFILE: str(ea_profile)
+                    }
+                }
+            }
+        }
+        rc = self.write_config(data)
+        nxconfig = config.load('test')
+        profile_id = nxconfig.get_profile_id('eap', is_ga=False)
+
+        self.assertEqual(profile_id, ea_profile)
+
     def test_preemptive_auth(self):
         url='http://nowhere.com/nexus'
         data={

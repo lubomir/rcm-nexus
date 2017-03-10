@@ -1,0 +1,33 @@
+<repo-group>
+  <data>
+    <contentResourceURI>http://localhost:8081/nexus/content/groups/public</contentResourceURI>
+    <id>public</id>
+    <name>Public Repositories</name>
+    <provider>maven2</provider>
+    <format>maven2</format>
+    <repoType>group</repoType>
+    <exposed>true</exposed>
+    <repositories>
+      <repo-group-member>
+        <id>releases</id>
+        <name>Releases</name>
+        <resourceURI>http://localhost:8081/nexus/service/local/repo_groups/public/releases</resourceURI>
+      </repo-group-member>
+      <repo-group-member>
+        <id>snapshots</id>
+        <name>Snapshots</name>
+        <resourceURI>http://localhost:8081/nexus/service/local/repo_groups/public/snapshots</resourceURI>
+      </repo-group-member>
+      <repo-group-member>
+        <id>thirdparty</id>
+        <name>3rd party</name>
+        <resourceURI>http://localhost:8081/nexus/service/local/repo_groups/public/thirdparty</resourceURI>
+      </repo-group-member>
+      <repo-group-member>
+        <id>central</id>
+        <name>Central</name>
+        <resourceURI>http://localhost:8081/nexus/service/local/repo_groups/public/central</resourceURI>
+      </repo-group-member>
+    </repositories>
+  </data>
+</repo-group>
