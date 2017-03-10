@@ -3,22 +3,27 @@ from session import Session
 import config
 import repo as repos
 import group as groups
+import archive
+import staging
 import os.path
 import sys
 import re
 import click
+import tempfile
 
 RELEASE_GROUP_NAME = 'product-ga'
 TECHPREVIEW_GROUP_NAME = 'product-techpreview'
 PRERELEASE_GROUP_NAME = 'product-earlyaccess'
 
 @click.command()
-@click.argument('repo', type=click.Path(exists=True))
+@click.argument('repo', type=click.Path(exists=True), help="Maven Repository content (zip or directory; '*maven-repository' path prefixes will be trimmed)")
 @click.option('--environment', '-e', help='The target Nexus environment (from ~/.config/nexup/nexup.yaml)')
+@click.option('--product', '-p', help='The product key, used to lookup profileId from the configuration')
+@click.option('--version', '-v', help='The product version, used in repository definition metadata')
 @click.option('--ga', '-g', is_flag=True, default=False, help='Push content to the GA group (as opposed to earlyaccess)')
 @click.option('--debug', '-D', is_flag=True, default=False)
-def push(repo, environment, ga=False, debug=False):
-    "Push maven repository content to a Nexus staging repository."
+def push(repo, environment, product, version, ga=False, debug=False):
+    "Push maven repository content to a Nexus staging repository, and add the staging repository to the appropriate content groups."
 
     nexus_config = config.load(environment)
 
@@ -33,32 +38,41 @@ def push(repo, environment, ga=False, debug=False):
         print "Pushing: %s content to: %s" % (repo, environment)
         
         # produce a set of clean repository zips for PUT upload.
+        zips_dir = tempfile.mkdtemp()
+        print "Creating ZIP archives in: %s" % zips_dir
         if os.path.isdir(repo):
             print "Processing repository directory: %s" % repo
 
-            # TODO: Walk the directory tree, and create a zip.
+            # Walk the directory tree, and create a zip.
+            zip_paths = archive.create_partitioned_zips_from_dir(repo, zips_dir)
         else:
             print "Processing repository zip archive: %s" % repo
-            # TODO: Open the zip, walk the entries and normalize the structure to clean zip (if necessary)
+
+            # Open the zip, walk the entries and normalize the structure to clean zip (if necessary)
+            zip_paths = archive.create_partitioned_zips_from_zip(repo, zips_dir)
 
         
-        # TODO: Open new staging repository with description
+        # Open new staging repository with description
+        staging_repo_id = staging.start_staging_repo(session, nexus_config, product, version, ga)
 
-        # TODO: HTTP PUT clean repository zips to Nexus.
+        # HTTP PUT clean repository zips to Nexus.
+        delete_first = True
+        for zipfile in zip_paths:
+            repo.push_zip(session, staging_repo_id, zipfile, delete_first)
+            delete_first = False
 
-        # TODO: Close staging repository
-        staging_repo_name = "FIXME"
+        # Close staging repository
+        staging.finish_staging_repo(session, nexus_config, staging_repo_id, product, version, ga)
 
-        for group_name in groups:
-            group = groups.load(session, group_name, ignore_missing=True)
+        for group_id in groups:
+            group = groups.load(session, group_id, ignore_missing=True)
             if group is not None:
-                print "Adding %s to group: %s" % (staging_repo_name, group_name)
+                print "Adding %s to group: %s" % (staging_repo_id, group_id)
 
-                # TODO: How do you reference a staging repository for group membership??
-                group.append_member(session, staging_repo_name).save(session)
+                group.append_member(session, staging_repo_id).save(session)
             else:
-                print "No such group: %s" % group_name
-                raise Exception("No such group: %s" % group_name)
+                print "No such group: %s" % group_id
+                raise Exception("No such group: %s" % group_id)
     finally:
         if session is not None:
             session.close()
