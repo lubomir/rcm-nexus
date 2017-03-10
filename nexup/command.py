@@ -16,7 +16,7 @@ TECHPREVIEW_GROUP_NAME = 'product-techpreview'
 PRERELEASE_GROUP_NAME = 'product-earlyaccess'
 
 @click.command()
-@click.argument('repo', type=click.Path(exists=True), help="Maven Repository content (zip or directory; '*maven-repository' path prefixes will be trimmed)")
+@click.argument('repo', type=click.Path(exists=True))
 @click.option('--environment', '-e', help='The target Nexus environment (from ~/.config/nexup/nexup.yaml)')
 @click.option('--product', '-p', help='The product key, used to lookup profileId from the configuration')
 @click.option('--version', '-v', help='The product version, used in repository definition metadata')
