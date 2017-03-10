@@ -15,6 +15,9 @@ from lxml import (objectify,etree)
 from session import (nexus_boolean, python_boolean)
 import repo as repos
 import os
+import re
+
+GROUP_CONTENT_URI_RE='(.+)/content/groups/.+'
 
 GROUPS_PATH = '/service/local/repo_groups'
 NAMED_GROUP_PATH = GROUPS_PATH + '/{key}'
@@ -126,7 +129,16 @@ class Group(object):
             member = etree.SubElement(members, 'repo-group-member')
             member.id = repo.data.id
             member.name = repo.data.name
-            member.resourceURI = os.path.join(self.content_uri(), repo.data.id)
+            print "Append: '%s' to group content URI: '%s'" % (repo.data.id, self.data.contentResourceURI)
+
+            match = re.search(GROUP_CONTENT_URI_RE, str(self.content_uri()))
+            base_url = match.group(1)
+
+            repo_id = str(repo.data.id)
+
+            resource_uri = "%s%s/%s" % (base_url, NAMED_GROUP_PATH.format(key=self.id()), repo_id)
+
+            member.resourceURI = resource_uri
             
             if session.debug:
                 print "Added member: %s" % repo_key
