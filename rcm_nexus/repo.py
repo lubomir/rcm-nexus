@@ -13,7 +13,7 @@
 #    John Casey (jcasey@redhat.com)
 
 from lxml import (objectify,etree)
-from session import (nexus_boolean,Enum)
+from rcm_nexus.session import Enum
 import os
 import shutil
 import re
@@ -189,22 +189,18 @@ class Repository(object):
         return self
     
     def set_exposed(self, exposed):
-        # exposed = nexus_boolean(exposed)
         self.data.exposed = exposed
         return self
     
     def set_browseable(self, browse):
-        # browse = nexus_boolean(browse)
         self.data.browseable = browse
         return self
     
     def set_indexable(self, index):
-        # index = nexus_boolean(index)
         self.data.indexable = index
         return self
     
     def set_download_remote_indexes(self, download):
-        # download = nexus_boolean(download)
         self.data.downloadRemoteIndexes = download
         return self
     

@@ -41,15 +41,6 @@ class Enum(object):
     def values(self):
         return self._all_values
 
-NEXUS_BOOLEANS = Enum(true='true', false='false')
-
-def nexus_boolean(value):
-    strval = str(value).lower()
-    if not strval in NEXUS_BOOLEANS.values():
-        raise Exception( "Invalid boolean: %s" % value)
-    
-    return strval
-
 def python_boolean(value):
     return True if str(value) in ('True', 'true') else False
 
