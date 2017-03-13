@@ -60,8 +60,8 @@ setup(
     test_suite="tests",
     entry_points={
       'console_scripts': [
-        'rcm-nexus-push = rcm_nexus:push',
-        'rcm-nexus-rollback = rcm_nexus:rollback',
+        'nexus-push = rcm_nexus:push',
+        'nexus-rollback = rcm_nexus:rollback',
       ],
     }
 )
