@@ -46,7 +46,7 @@ setup(
     keywords='nexus maven build java ',
     author='John Casey',
     author_email='jdcasey@commonjava.org',
-    url='https://github.com/release-engineering/nexup',
+    url='https://mojo.redhat.com/docs/DOC-1010179',
     license='GPLv3+',
     packages=find_packages(exclude=['ez_setup', 'examples', 'tests']),
     install_requires=[

@@ -23,7 +23,11 @@ PRERELEASE_GROUP_NAME = 'product-earlyaccess'
 @click.option('--ga', '-g', is_flag=True, default=False, help='Push content to the GA group (as opposed to earlyaccess)')
 @click.option('--debug', '-D', is_flag=True, default=False)
 def push(repo, environment, product, version, ga=False, debug=False):
-    "Push maven repository content to a Nexus staging repository, and add the staging repository to the appropriate content groups."
+    """Push Apache Maven repository content to a Nexus staging repository, 
+    then add the staging repository to appropriate content groups.
+
+    More Information: https://mojo.redhat.com/docs/DOC-1010179
+    """
 
     nexus_config = config.load(environment)
 
@@ -82,7 +86,10 @@ def push(repo, environment, product, version, ga=False, debug=False):
 @click.option('--environment', '-e', help='The target Nexus environment (from ~/.config/nexup/nexup.yaml)')
 @click.option('--debug', '-D', is_flag=True, default=False)
 def rollback(args, config, session, delete_log=None, debug=False):
-    "Remove the given staging repository from all release groups"
+    """Remove the given staging repository from all release groups
+
+    More Information: https://mojo.redhat.com/docs/DOC-1010179
+    """
 
     nexus_config = config.load(environment)
 
