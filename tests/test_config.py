@@ -11,7 +11,9 @@ class TestConfigLoad(NexupBaseTest):
 
     def test_init(self):
         config_file = config.init_config()
-        config.load('prod')
+        conf = config.load('prod')
+        self.assertEqual(conf.get_profile_id('MYPRODUCT', is_ga=True) is None, False)
+        self.assertEqual(conf.get_profile_id('MYPRODUCT', is_ga=False) is None, False)
 
     def test_minimal_from_default(self):
         url='http://nowhere.com/nexus'
