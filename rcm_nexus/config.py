@@ -100,16 +100,18 @@ def init_config():
     conf_path = get_config_path()
     conf_dir = os.path.dirname(conf_path)
     os.makedirs(conf_dir)
+
+    user = os.environ.get('USER') or 'someuser'
     
     conf = {
         'prod':{
             URL: 'http://prod.nexus.corp.com/nexus',
-            USERNAME: os.environ['USER'] or 'someuser',
+            USERNAME: user,
             PASSWORD: '@oracle:eval:pass rcm-nexus-prod',
         },
         'stage':{
             URL: 'http://stage.nexus.corp.com/nexus',
-            USERNAME: os.environ['USER'] or 'someuser',
+            USERNAME: user,
             PASSWORD: '@oracle:eval:pass rcm-nexus-stage',
         }
     }

@@ -9,6 +9,10 @@ import yaml
 
 class TestConfigLoad(NexupBaseTest):
 
+    def test_init(self):
+        config_file = config.init_config()
+        config.load('prod')
+
     def test_minimal_from_default(self):
         url='http://nowhere.com/nexus'
         data={
