@@ -12,12 +12,12 @@
 #    John Casey (jcasey@redhat.com)
 
 from lxml import (objectify,etree)
-from session import (nexus_boolean, python_boolean)
-import repo as repos
+from rcm_nexus.session import python_boolean
+import rcm_nexus.repo as repos
 import os
 import re
 
-GROUP_CONTENT_URI_RE='(.+)/content/groups/.+'
+GROUP_CONTENT_URI_RE = '(.+)/content/groups/.+'
 
 GROUPS_PATH = '/service/local/repo_groups'
 NAMED_GROUP_PATH = GROUPS_PATH + '/{key}'
@@ -59,7 +59,7 @@ class Group(object):
             self.data.provider='maven2'
             self.data.format='maven2'
             self.data.repoType = 'group'
-            self.data.exposed = nexus_boolean(True)
+            self.data.exposed = True
     
     def exposed(self):
         exposed = self.data.exposed
@@ -69,7 +69,6 @@ class Group(object):
         return pyval
     
     def set_exposed(self, exposed):
-        # self.data.exposed = nexus_boolean(exposed)
         self.data.exposed = exposed
         return self
     

@@ -4,14 +4,14 @@ import subprocess
 import os
 import sys
 
-RCM_NEXUS_YAML='RCM_NEXUS_YAML'
+RCM_NEXUS_YAML = 'RCM_NEXUS_YAML'
 
-URL='url'
-USERNAME='username'
-PASSWORD='password'
-SSL_VERIFY='ssl-verify'
-PREEMPTIVE_AUTH='preemptive-auth'
-INTERACTIVE='interactive'
+URL = 'url'
+USERNAME = 'username'
+PASSWORD = 'password'
+SSL_VERIFY = 'ssl-verify'
+PREEMPTIVE_AUTH = 'preemptive-auth'
+INTERACTIVE = 'interactive'
 
 GA_PROFILE = 'ga'
 EA_PROFILE = 'ea'
