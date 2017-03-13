@@ -9,7 +9,7 @@ if sys.version_info >= (3,):
 else:
     use_2to3 = False
 
-version='0.0.1'
+version='1.0.0'
 
 f = open('README.rst')
 long_description = f.read().strip()
@@ -31,7 +31,7 @@ extras = {
 setup(
     zip_safe=True,
     use_2to3=use_2to3,
-    name='nexup',
+    name='rcm-nexus',
     version=version,
     long_description=long_description,
     classifiers=[
@@ -46,7 +46,7 @@ setup(
     keywords='nexus maven build java ',
     author='John Casey',
     author_email='jdcasey@commonjava.org',
-    url='https://github.com/release-engineering/nexup',
+    url='https://mojo.redhat.com/docs/DOC-1010179',
     license='GPLv3+',
     packages=find_packages(exclude=['ez_setup', 'examples', 'tests']),
     install_requires=[
@@ -60,8 +60,8 @@ setup(
     test_suite="tests",
     entry_points={
       'console_scripts': [
-        'nexup-push = nexup:push',
-        'nexup-rollback = nexup:rollback',
+        'rcm-nexus-push = rcm_nexus:push',
+        'rcm-nexus-rollback = rcm_nexus:rollback',
       ],
     }
 )

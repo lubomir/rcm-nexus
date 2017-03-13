@@ -1,6 +1,6 @@
 
 from base import NexupBaseTest
-import nexup
+import rcm_nexus
 import responses
 import os
 import yaml
@@ -17,7 +17,7 @@ class TestSessionPost(NexupBaseTest):
 
 		responses.add(responses.POST, conf.url + path, body=response_src, status=201)
 
-		sess = nexup.session.Session(conf, debug=True)
+		sess = rcm_nexus.session.Session(conf, debug=True)
 		resp,content=sess.post(path, request_src)
 
 		self.assertEqual(len(responses.calls), 1)
@@ -34,7 +34,7 @@ class TestSessionPost(NexupBaseTest):
 
 		responses.add(responses.POST, conf.url + path, body=response_src, status=203, adding_headers={'content-length': '12'}, content_type='application/json')
 
-		sess = nexup.session.Session(conf)
+		sess = rcm_nexus.session.Session(conf)
 		resp,content=sess.post(path, request_src, expect_status=203)
 
 		self.assertEqual(len(responses.calls), 1)
@@ -53,7 +53,7 @@ class TestSessionPost(NexupBaseTest):
 
 		responses.add(responses.POST, conf.url + path, status=404)
 
-		sess = nexup.session.Session(conf)
+		sess = rcm_nexus.session.Session(conf)
 		resp,content=sess.post(path, request_src, ignore_404=True)
 
 		self.assertEqual(len(responses.calls), 1)
@@ -69,7 +69,7 @@ class TestSessionPost(NexupBaseTest):
 		
 		responses.add(responses.POST, conf.url + path, status=404)
 
-		sess = nexup.session.Session(conf)
+		sess = rcm_nexus.session.Session(conf)
 
 		try:
 			resp,content=sess.post(path, request_src, ignore_404=False)
@@ -90,7 +90,7 @@ class TestSessionPost(NexupBaseTest):
 		
 		responses.add(responses.POST, conf.url + path, status=404)
 
-		sess = nexup.session.Session(conf)
+		sess = rcm_nexus.session.Session(conf)
 
 		try:
 			sess.post(path, request_src, ignore_404=False, fail=False)
@@ -115,7 +115,7 @@ class TestSessionPost(NexupBaseTest):
 
 		responses.add_callback(responses.POST, conf.url + path, callback=callbk)
 
-		sess = nexup.session.Session(conf)
+		sess = rcm_nexus.session.Session(conf)
 
 		resp,content=sess.post(path, request_src, expect_status=203, headers={'my-header': 'foo'})
 

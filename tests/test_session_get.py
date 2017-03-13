@@ -1,6 +1,6 @@
 
 from base import NexupBaseTest
-import nexup
+import rcm_nexus
 import responses
 import os
 import yaml
@@ -16,7 +16,7 @@ class TestSessionGet(NexupBaseTest):
 
 		responses.add(responses.GET, conf.url + path, body=src, status=200)
 
-		sess = nexup.session.Session(conf)
+		sess = rcm_nexus.session.Session(conf)
 		resp,content=sess.get(path)
 
 		self.assertEqual(len(responses.calls), 1)
@@ -30,7 +30,7 @@ class TestSessionGet(NexupBaseTest):
 
 		responses.add(responses.GET, conf.url + path, status=203, adding_headers={'content-length': '12'}, content_type='application/json')
 
-		sess = nexup.session.Session(conf)
+		sess = rcm_nexus.session.Session(conf)
 		resp,_content=sess.get(path, expect_status=203)
 
 		self.assertEqual(len(responses.calls), 1)
@@ -45,7 +45,7 @@ class TestSessionGet(NexupBaseTest):
 
 		responses.add(responses.GET, conf.url + path, status=404)
 
-		sess = nexup.session.Session(conf)
+		sess = rcm_nexus.session.Session(conf)
 		resp,_content=sess.get(path, ignore_404=True)
 
 		self.assertEqual(len(responses.calls), 1)
@@ -58,7 +58,7 @@ class TestSessionGet(NexupBaseTest):
 
 		responses.add(responses.GET, conf.url + path, status=404)
 
-		sess = nexup.session.Session(conf)
+		sess = rcm_nexus.session.Session(conf)
 
 		try:
 			resp,_content=sess.get(path, ignore_404=False)
@@ -76,7 +76,7 @@ class TestSessionGet(NexupBaseTest):
 
 		responses.add(responses.GET, conf.url + path, status=404)
 
-		sess = nexup.session.Session(conf)
+		sess = rcm_nexus.session.Session(conf)
 
 		try:
 			sess.get(path, ignore_404=False, fail=False)
@@ -98,7 +98,7 @@ class TestSessionGet(NexupBaseTest):
 
 		responses.add_callback(responses.GET, conf.url + path, callback=callbk)
 
-		sess = nexup.session.Session(conf)
+		sess = rcm_nexus.session.Session(conf)
 
 		resp,_content=sess.get(path, expect_status=203, headers={'my-header': 'foo'})
 

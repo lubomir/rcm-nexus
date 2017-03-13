@@ -3,7 +3,7 @@ from __future__ import unicode_literals
 
 from base import NexupBaseTest
 from unittest import TestCase
-from nexup import config
+from rcm_nexus import config
 import os
 import yaml
 

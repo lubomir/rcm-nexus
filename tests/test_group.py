@@ -1,5 +1,5 @@
 from base import (TEST_INPUT_DIR, NexupBaseTest)
-import nexup
+import rcm_nexus
 import responses
 import os
 import yaml
@@ -14,19 +14,19 @@ class TestGroup(NexupBaseTest):
 	def test_exists(self):
 		conf = self.create_and_load_conf()
 		key='public'
-		path = nexup.group.NAMED_GROUP_PATH.format(key=key)
+		path = rcm_nexus.group.NAMED_GROUP_PATH.format(key=key)
 
 		responses.add(responses.HEAD, conf.url + path, status=200)
 
-		sess = nexup.session.Session(conf)
-		self.assertEqual(nexup.group.group_exists(sess, key), True)
+		sess = rcm_nexus.session.Session(conf)
+		self.assertEqual(rcm_nexus.group.group_exists(sess, key), True)
 		self.assertEqual(len(responses.calls), 1)
 
 	@responses.activate
 	def test_save_new(self):
 		conf = self.create_and_load_conf()
 		key='foo'
-		path = nexup.group.GROUPS_PATH
+		path = rcm_nexus.group.GROUPS_PATH
 
 		def callbk(req):
 			print "RECV body: '%s'" % req.body
@@ -34,8 +34,8 @@ class TestGroup(NexupBaseTest):
 
 		responses.add_callback(responses.POST, conf.url + path, callback=callbk)
 
-		sess = nexup.session.Session(conf)
-		group = nexup.group.Group(key, 'Foo Repo')
+		sess = rcm_nexus.session.Session(conf)
+		group = rcm_nexus.group.Group(key, 'Foo Repo')
 
 		group.save(sess)
 		self.assertEqual(len(responses.calls), 1)
@@ -44,7 +44,7 @@ class TestGroup(NexupBaseTest):
 	def test_load_change_save(self):
 		conf = self.create_and_load_conf()
 		key='public'
-		path = nexup.group.NAMED_GROUP_PATH.format(key=key)
+		path = rcm_nexus.group.NAMED_GROUP_PATH.format(key=key)
 
 		def callbk(req):
 			print "RECV body: '%s'" % req.body
@@ -58,8 +58,8 @@ class TestGroup(NexupBaseTest):
 
 		responses.add(responses.GET, conf.url + path, body=body, status=200)
 
-		sess = nexup.session.Session(conf)
-		group = nexup.group.load(sess, key)
+		sess = rcm_nexus.session.Session(conf)
+		group = rcm_nexus.group.load(sess, key)
 		group.set_exposed(False)
 
 		group.save(sess)
@@ -69,15 +69,15 @@ class TestGroup(NexupBaseTest):
 	def test_load_public(self):
 		conf = self.create_and_load_conf()
 		key='public'
-		path = nexup.group.NAMED_GROUP_PATH.format(key=key)
+		path = rcm_nexus.group.NAMED_GROUP_PATH.format(key=key)
 		body = None
 		with open(PUBLIC_GROUP_TESTDATA) as f:
 			body=f.read()
 
 		responses.add(responses.GET, conf.url + path, body=body, status=200)
 
-		sess = nexup.session.Session(conf)
-		group = nexup.group.load(sess, key)
+		sess = rcm_nexus.session.Session(conf)
+		group = rcm_nexus.group.load(sess, key)
 
 		self.assertEqual(group.id(), key)
 		self.assertEqual(group.name(), 'Public Repositories')
@@ -94,12 +94,12 @@ class TestGroup(NexupBaseTest):
 	def test_set_properties(self):
 		conf = self.create_and_load_conf()
 		key='public'
-		path = nexup.group.NAMED_GROUP_PATH.format(key=key)
+		path = rcm_nexus.group.NAMED_GROUP_PATH.format(key=key)
 		body = None
 		with open(PUBLIC_GROUP_TESTDATA) as f:
 			body=f.read()
 
-		central_path=nexup.repo.NAMED_REPO_PATH.format(key='central')
+		central_path=rcm_nexus.repo.NAMED_REPO_PATH.format(key='central')
 		central_body=None
 		with open(os.path.join(TEST_INPUT_DIR, 'central-repo.xml')) as f:
 			central_body=f.read();
@@ -107,8 +107,8 @@ class TestGroup(NexupBaseTest):
 		responses.add(responses.GET, conf.url + path, body=body, status=200)
 		responses.add(responses.GET, conf.url + central_path, body=central_body, status=200)
 
-		sess = nexup.session.Session(conf)
-		group = nexup.group.load(sess, key)
+		sess = rcm_nexus.session.Session(conf)
+		group = rcm_nexus.group.load(sess, key)
 
 		self.assertEqual(group.id(), key)
 		self.assertEqual(len(responses.calls), 1)

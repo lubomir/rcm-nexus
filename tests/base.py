@@ -1,11 +1,11 @@
-import nexup
+import rcm_nexus
 import traceback
 import os
 import tempfile
 import shutil
 import unittest
 import yaml
-from nexup import config
+from rcm_nexus import config
 import zipfile
 from random import randint
 
@@ -21,7 +21,7 @@ class NexupBaseTest(unittest.TestCase):
     """
     def setUp(self):
         self.old_environ = os.environ.copy()
-        self.tempdir = tempfile.mkdtemp(prefix='nexup')
+        self.tempdir = tempfile.mkdtemp(prefix='rcm-nexus')
 
         # Create temporary config files.
         self.taskrc = os.path.join(self.tempdir, '.taskrc')
@@ -32,7 +32,7 @@ class NexupBaseTest(unittest.TestCase):
 
         # Configure environment.
         os.environ['HOME'] = self.tempdir
-        os.environ.pop(config.NEXUP_YAML, None)
+        os.environ.pop(config.RCM_NEXUS_YAML, None)
         os.environ.pop('XDG_CONFIG_HOME', None)
         os.environ.pop('XDG_CONFIG_DIRS', None)
 
@@ -74,7 +74,7 @@ class NexupBaseTest(unittest.TestCase):
         """
         Create an empty file in the temporary directory, return the full path.
         """
-        path = '.config/nexup/config.yaml'
+        path = '.config/rcm-nexus/config.yaml'
         fpath = os.path.join(self.tempdir, path)
         if not os.path.exists(os.path.dirname(fpath)):
             os.makedirs(os.path.dirname(fpath))
@@ -90,8 +90,8 @@ class NexupBaseTest(unittest.TestCase):
 
         return fpath
 
-    def create_and_load_conf(self, conf={'test':{nexup.config.URL: TEST_BASEURL}}):
+    def create_and_load_conf(self, conf={'test':{rcm_nexus.config.URL: TEST_BASEURL}}):
         fpath = self.write_config(conf)
-        return nexup.config.load('test')
+        return rcm_nexus.config.load('test')
 
 

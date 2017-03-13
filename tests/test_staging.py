@@ -1,5 +1,5 @@
 from base import (TEST_INPUT_DIR, NexupBaseTest)
-from nexup import (staging, config, session)
+from rcm_nexus import (staging, config, session)
 import responses
 import os
 import yaml

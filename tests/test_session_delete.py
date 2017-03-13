@@ -1,6 +1,6 @@
 
 from base import NexupBaseTest
-import nexup
+import rcm_nexus
 import responses
 import os
 import yaml
@@ -15,7 +15,7 @@ class TestSessionDelete(NexupBaseTest):
 
 		responses.add(responses.DELETE, conf.url + path, status=204)
 
-		sess = nexup.session.Session(conf)
+		sess = rcm_nexus.session.Session(conf)
 		resp,_content=sess.delete(path)
 
 		self.assertEqual(len(responses.calls), 1)
@@ -28,7 +28,7 @@ class TestSessionDelete(NexupBaseTest):
 
 		responses.add(responses.DELETE, conf.url + path, status=203, adding_headers={'content-length': '12'}, content_type='application/json')
 
-		sess = nexup.session.Session(conf)
+		sess = rcm_nexus.session.Session(conf)
 		resp,_content=sess.delete(path, expect_status=203)
 
 		self.assertEqual(len(responses.calls), 1)
@@ -43,7 +43,7 @@ class TestSessionDelete(NexupBaseTest):
 
 		responses.add(responses.DELETE, conf.url + path, status=404)
 
-		sess = nexup.session.Session(conf)
+		sess = rcm_nexus.session.Session(conf)
 		resp,_content=sess.delete(path, ignore_404=True)
 
 		self.assertEqual(len(responses.calls), 1)
@@ -56,7 +56,7 @@ class TestSessionDelete(NexupBaseTest):
 
 		responses.add(responses.DELETE, conf.url + path, status=404)
 
-		sess = nexup.session.Session(conf)
+		sess = rcm_nexus.session.Session(conf)
 
 		try:
 			resp,_content=sess.delete(path, ignore_404=False)
@@ -74,7 +74,7 @@ class TestSessionDelete(NexupBaseTest):
 
 		responses.add(responses.DELETE, conf.url + path, status=404)
 
-		sess = nexup.session.Session(conf)
+		sess = rcm_nexus.session.Session(conf)
 
 		try:
 			sess.delete(path, ignore_404=False, fail=False)
@@ -96,7 +96,7 @@ class TestSessionDelete(NexupBaseTest):
 
 		responses.add_callback(responses.DELETE, conf.url + path, callback=callbk)
 
-		sess = nexup.session.Session(conf)
+		sess = rcm_nexus.session.Session(conf)
 
 		resp,_content=sess.delete(path, expect_status=203, headers={'my-header': 'foo'})
 
