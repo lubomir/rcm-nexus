@@ -1,4 +1,4 @@
-Name:		python-rcm-nexup
+Name:		python-rcm-nexus
 Version:	1.0.0
 Release:	1%{?dist}
 Summary:	RCM Tools for Working with the Sonatype Nexus Repository Manager
@@ -10,7 +10,7 @@ Source0:	%{name}-%{version}.tar.gz
 BuildArch:	noarch
 BuildRequires:	python2-devel python-setuptools
 
-Requires:	python2 python-setuptools python-lxml
+Requires:	python2 python-setuptools python-lxml python-requests python-click PyYAML
 
 
 %description

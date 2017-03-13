@@ -4,7 +4,7 @@ import subprocess
 import os
 import sys
 
-NEXUP_YAML='NEXUP_YAML'
+RCM_NEXUS_YAML='RCM_NEXUS_YAML'
 
 URL='url'
 USERNAME='username'
@@ -128,23 +128,23 @@ def get_config_path():
     """
     Determine the path to the config file. This will return, in this order of
     precedence:
-    - the value of $NEXUP_YAML if set
-    - $XDG_CONFIG_HOME/nexup/config.yaml if exists
-    - ~/.nexup/config.yaml if exists
-    - <dir>/nexup/config.yaml if exists, for dir in $XDG_CONFIG_DIRS
-    - $XDG_CONFIG_HOME/nexup/config.yaml otherwise
+    - the value of $RCM_NEXUS_YAML if set
+    - $XDG_CONFIG_HOME/rcm-nexus/config.yaml if exists
+    - ~/.rcm-nexus/config.yaml if exists
+    - <dir>/rcm-nexus/config.yaml if exists, for dir in $XDG_CONFIG_DIRS
+    - $XDG_CONFIG_HOME/rcm-nexus/config.yaml otherwise
     """
-    if os.environ.get(NEXUP_YAML):
-        return os.environ[NEXUP_YAML]
+    if os.environ.get(RCM_NEXUS_YAML):
+        return os.environ[RCM_NEXUS_YAML]
     xdg_config_home = (
         os.environ.get('XDG_CONFIG_HOME') or os.path.expanduser('~/.config'))
     xdg_config_dirs = (
         (os.environ.get('XDG_CONFIG_DIRS') or '/etc/xdg').split(':'))
     paths = [
-        os.path.join(xdg_config_home, 'nexup', 'config.yaml'),
-        os.path.expanduser("~/.nexup/config.yaml")]
+        os.path.join(xdg_config_home, 'rcm-nexus', 'config.yaml'),
+        os.path.expanduser("~/.rcm-nexus/config.yaml")]
     paths += [
-        os.path.join(d, 'nexup', 'config.yaml') for d in xdg_config_dirs]
+        os.path.join(d, 'rcm-nexus', 'config.yaml') for d in xdg_config_dirs]
     for path in paths:
         if os.path.exists(path):
             return path

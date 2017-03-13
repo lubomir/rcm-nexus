@@ -1,6 +1,6 @@
 
 from base import NexupBaseTest
-import nexup
+import rcm_nexus
 import responses
 import os
 import yaml
@@ -15,7 +15,7 @@ class TestSessionHead(NexupBaseTest):
 
 		responses.add(responses.HEAD, conf.url + path, status=200, adding_headers={'content-length': '12'}, content_type='application/json')
 
-		sess = nexup.session.Session(conf)
+		sess = rcm_nexus.session.Session(conf)
 		resp,_content=sess.head(path)
 
 		self.assertEqual(len(responses.calls), 1)
@@ -30,7 +30,7 @@ class TestSessionHead(NexupBaseTest):
 
 		responses.add(responses.HEAD, conf.url + path, status=203, adding_headers={'content-length': '12'}, content_type='application/json')
 
-		sess = nexup.session.Session(conf)
+		sess = rcm_nexus.session.Session(conf)
 		resp,_content=sess.head(path, expect_status=203)
 
 		self.assertEqual(len(responses.calls), 1)
@@ -45,7 +45,7 @@ class TestSessionHead(NexupBaseTest):
 
 		responses.add(responses.HEAD, conf.url + path, status=404)
 
-		sess = nexup.session.Session(conf)
+		sess = rcm_nexus.session.Session(conf)
 		resp,_content=sess.head(path, ignore_404=True)
 
 		self.assertEqual(len(responses.calls), 1)
@@ -58,7 +58,7 @@ class TestSessionHead(NexupBaseTest):
 
 		responses.add(responses.HEAD, conf.url + path, status=404)
 
-		sess = nexup.session.Session(conf)
+		sess = rcm_nexus.session.Session(conf)
 
 		try:
 			resp,_content=sess.head(path, ignore_404=False)
@@ -76,7 +76,7 @@ class TestSessionHead(NexupBaseTest):
 
 		responses.add(responses.HEAD, conf.url + path, status=404)
 
-		sess = nexup.session.Session(conf)
+		sess = rcm_nexus.session.Session(conf)
 
 		try:
 			sess.head(path, ignore_404=False, fail=False)
@@ -97,7 +97,7 @@ class TestSessionHead(NexupBaseTest):
 
 		responses.add_callback(responses.HEAD, conf.url + path, callback=callbk)
 
-		sess = nexup.session.Session(conf)
+		sess = rcm_nexus.session.Session(conf)
 
 		resp,_content=sess.head(path, expect_status=203, headers={'my-header': 'foo'})
 
@@ -114,7 +114,7 @@ class TestSessionHead(NexupBaseTest):
 
 		responses.add_callback(responses.HEAD, conf.url + path, callback=callbk)
 
-		sess = nexup.session.Session(conf)
+		sess = rcm_nexus.session.Session(conf)
 
 		resp,_content=sess.head(path, expect_status=203, headers={'my-header': 'foo'})
 

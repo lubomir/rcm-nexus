@@ -1,5 +1,5 @@
 from base import (TEST_INPUT_DIR, NexupBaseTest)
-import nexup
+import rcm_nexus
 import responses
 import os
 import yaml
@@ -12,7 +12,7 @@ class TestRepo(NexupBaseTest):
 	def test_push_zip_with_delete(self):
 		conf = self.create_and_load_conf()
 		key='central'
-		path = nexup.repo.COMPRESSED_CONTENT_PATH.format(key=key, delete='?delete=true')
+		path = rcm_nexus.repo.COMPRESSED_CONTENT_PATH.format(key=key, delete='?delete=true')
 		# print "\n\n\n\nPOST: %s%s\n\n\n\n" % (conf.url, path)
 
 		responses.add(responses.POST, conf.url + path, match_querystring=True, status=201)
@@ -25,15 +25,15 @@ class TestRepo(NexupBaseTest):
 
 		self.write_zip(src_zip, paths)
 
-		sess = nexup.session.Session(conf)
-		nexup.repo.push_zip(sess, key, src_zip, True)
+		sess = rcm_nexus.session.Session(conf)
+		rcm_nexus.repo.push_zip(sess, key, src_zip, True)
 		self.assertEqual(len(responses.calls), 1)
 
 	@responses.activate
 	def test_push_zip_default_no_delete(self):
 		conf = self.create_and_load_conf()
 		key='central'
-		path = nexup.repo.COMPRESSED_CONTENT_PATH.format(key=key, delete='')
+		path = rcm_nexus.repo.COMPRESSED_CONTENT_PATH.format(key=key, delete='')
 		# print "\n\n\n\nPOST: %s%s\n\n\n\n" % (conf.url, path)
 
 		responses.add(responses.POST, conf.url + path, status=201)
@@ -46,39 +46,39 @@ class TestRepo(NexupBaseTest):
 
 		self.write_zip(src_zip, paths)
 
-		sess = nexup.session.Session(conf)
-		nexup.repo.push_zip(sess, key, src_zip)
+		sess = rcm_nexus.session.Session(conf)
+		rcm_nexus.repo.push_zip(sess, key, src_zip)
 		self.assertEqual(len(responses.calls), 1)
 
 	@responses.activate
 	def test_exists(self):
 		conf = self.create_and_load_conf()
 		key='central'
-		path = nexup.repo.NAMED_REPO_PATH.format(key=key)
+		path = rcm_nexus.repo.NAMED_REPO_PATH.format(key=key)
 
 		responses.add(responses.HEAD, conf.url + path, status=200)
 
-		sess = nexup.session.Session(conf)
-		self.assertEqual(nexup.repo.repo_exists(sess, key), True)
+		sess = rcm_nexus.session.Session(conf)
+		self.assertEqual(rcm_nexus.repo.repo_exists(sess, key), True)
 		self.assertEqual(len(responses.calls), 1)
 
 	@responses.activate
 	def test_delete(self):
 		conf = self.create_and_load_conf()
 		key='central'
-		path = nexup.repo.NAMED_REPO_PATH.format(key=key)
+		path = rcm_nexus.repo.NAMED_REPO_PATH.format(key=key)
 
 		responses.add(responses.DELETE, conf.url + path, status=204)
 
-		sess = nexup.session.Session(conf)
-		nexup.repo.delete(sess, key)
+		sess = rcm_nexus.session.Session(conf)
+		rcm_nexus.repo.delete(sess, key)
 		self.assertEqual(len(responses.calls), 1)
 
 	@responses.activate
 	def test_save_new(self):
 		conf = self.create_and_load_conf()
 		key='foo'
-		path = nexup.repo.REPOS_PATH
+		path = rcm_nexus.repo.REPOS_PATH
 
 		def callbk(req):
 			print "RECV body: '%s'" % req.body
@@ -86,8 +86,8 @@ class TestRepo(NexupBaseTest):
 
 		responses.add_callback(responses.POST, conf.url + path, callback=callbk)
 
-		sess = nexup.session.Session(conf)
-		repo = nexup.repo.Repository(key, 'Foo Repo')
+		sess = rcm_nexus.session.Session(conf)
+		repo = rcm_nexus.repo.Repository(key, 'Foo Repo')
 
 		repo.save(sess)
 		self.assertEqual(len(responses.calls), 1)
@@ -96,7 +96,7 @@ class TestRepo(NexupBaseTest):
 	def test_load_change_save(self):
 		conf = self.create_and_load_conf()
 		key='central'
-		central_path = nexup.repo.NAMED_REPO_PATH.format(key=key)
+		central_path = rcm_nexus.repo.NAMED_REPO_PATH.format(key=key)
 
 		def callbk(req):
 			print "RECV body: '%s'" % req.body
@@ -110,8 +110,8 @@ class TestRepo(NexupBaseTest):
 
 		responses.add(responses.GET, conf.url + central_path, body=body, status=200)
 
-		sess = nexup.session.Session(conf)
-		repo = nexup.repo.load(sess, key)
+		sess = rcm_nexus.session.Session(conf)
+		repo = rcm_nexus.repo.load(sess, key)
 		repo.set_exposed(False)
 
 		repo.save(sess)
@@ -121,15 +121,15 @@ class TestRepo(NexupBaseTest):
 	def test_load_central(self):
 		conf = self.create_and_load_conf()
 		key='central'
-		path = nexup.repo.NAMED_REPO_PATH.format(key=key)
+		path = rcm_nexus.repo.NAMED_REPO_PATH.format(key=key)
 		body = None
 		with open(os.path.join(TEST_INPUT_DIR, 'central-repo.xml')) as f:
 			body=f.read()
 
 		responses.add(responses.GET, conf.url + path, body=body, status=200)
 
-		sess = nexup.session.Session(conf)
-		repo = nexup.repo.load(sess, key)
+		sess = rcm_nexus.session.Session(conf)
+		repo = rcm_nexus.repo.load(sess, key)
 
 		self.assertEqual(repo.id(), key)
 		self.assertEqual(repo.name(), 'Central')
@@ -146,15 +146,15 @@ class TestRepo(NexupBaseTest):
 	def test_set_properties(self):
 		conf = self.create_and_load_conf()
 		key='central'
-		path = nexup.repo.NAMED_REPO_PATH.format(key=key)
+		path = rcm_nexus.repo.NAMED_REPO_PATH.format(key=key)
 		body = None
 		with open(os.path.join(TEST_INPUT_DIR, 'central-repo.xml')) as f:
 			body=f.read()
 
 		responses.add(responses.GET, conf.url + path, body=body, status=200)
 
-		sess = nexup.session.Session(conf)
-		repo = nexup.repo.load(sess, key)
+		sess = rcm_nexus.session.Session(conf)
+		repo = rcm_nexus.repo.load(sess, key)
 
 		self.assertEqual(repo.id(), key)
 		self.assertEqual(len(responses.calls), 1)
@@ -163,13 +163,13 @@ class TestRepo(NexupBaseTest):
 		self.assertEqual(repo.data.notFoundCacheTTL, '12')
 		repo.set_nfc_ttl(1440)
 
-		repo.set_checksum_policy(nexup.repo.CHECKSUM_POLICIES.fail)
+		repo.set_checksum_policy(rcm_nexus.repo.CHECKSUM_POLICIES.fail)
 		self.assertEqual(repo.data.checksumPolicy, 'FAIL')
-		repo.set_checksum_policy(nexup.repo.CHECKSUM_POLICIES.warn)
+		repo.set_checksum_policy(rcm_nexus.repo.CHECKSUM_POLICIES.warn)
 
-		repo.set_repo_policy(nexup.repo.REPO_POLICIES.snapshot)
+		repo.set_repo_policy(rcm_nexus.repo.REPO_POLICIES.snapshot)
 		self.assertEqual(repo.data.repoPolicy, 'SNAPSHOT')
-		repo.set_repo_policy(nexup.repo.REPO_POLICIES.release)
+		repo.set_repo_policy(rcm_nexus.repo.REPO_POLICIES.release)
 
 		self.assertEqual(repo.data.downloadRemoteIndexes, False)
 		repo.set_download_remote_indexes(True)
@@ -177,18 +177,18 @@ class TestRepo(NexupBaseTest):
 		repo.set_download_remote_indexes(False)
 
 		repo.set_hosted('/path/to/storage')
-		self.assertEqual(repo.data.repoType, nexup.repo.REPO_TYPES.hosted)
+		self.assertEqual(repo.data.repoType, rcm_nexus.repo.REPO_TYPES.hosted)
 		self.assertEqual(repo.data.overrideLocalStorageUrl, 'file:/path/to/storage')
 		self.assertEqual(repo.data.get('remoteStorage'), None)
 
 		repo.set_remote('https://repo1.maven.org/maven456/')
 		self.assertEqual(repo.data.remoteStorage.remoteStorageUrl, 'https://repo1.maven.org/maven456/')
-		self.assertEqual(repo.data.repoType, nexup.repo.REPO_TYPES.remote)
+		self.assertEqual(repo.data.repoType, rcm_nexus.repo.REPO_TYPES.remote)
 		self.assertEqual(repo.data.get('overrideLocalStorageUrl'), None)
 
 		repo.set_remote('https://repo1.maven.org/maven789/')
 		self.assertEqual(repo.data.remoteStorage.remoteStorageUrl, 'https://repo1.maven.org/maven789/')
-		self.assertEqual(repo.data.repoType, nexup.repo.REPO_TYPES.remote)
+		self.assertEqual(repo.data.repoType, rcm_nexus.repo.REPO_TYPES.remote)
 		self.assertEqual(repo.data.get('overrideLocalStorageUrl'), None)
 
 		repo.set_remote('https://repo1.maven.org/maven2/')
@@ -208,9 +208,9 @@ class TestRepo(NexupBaseTest):
 		self.assertEqual(repo.data.indexable, False)
 		repo.set_indexable(True)
 
-		repo.set_write_policy(nexup.repo.WRITE_POLICIES.write_once)
+		repo.set_write_policy(rcm_nexus.repo.WRITE_POLICIES.write_once)
 		self.assertEqual(repo.data.writePolicy, 'ALLOW_WRITE_ONCE')
-		repo.set_write_policy(nexup.repo.WRITE_POLICIES.read_only)
+		repo.set_write_policy(rcm_nexus.repo.WRITE_POLICIES.read_only)
 
 		body_lines = body.split('\n')
 		rendered_lines = repo.render().split('\n')
@@ -222,7 +222,7 @@ class TestRepo(NexupBaseTest):
 	@responses.activate
 	def test_load_all(self):
 		conf = self.create_and_load_conf()
-		path = nexup.repo.REPOS_PATH
+		path = rcm_nexus.repo.REPOS_PATH
 
 		body = None
 		with open(os.path.join(TEST_INPUT_DIR, 'all-repos.xml')) as f:
@@ -230,8 +230,8 @@ class TestRepo(NexupBaseTest):
 
 		responses.add(responses.GET, conf.url + path, body=body, status=200)
 
-		sess = nexup.session.Session(conf)
-		repos = nexup.repo.load_all(sess)
+		sess = rcm_nexus.session.Session(conf)
+		repos = rcm_nexus.repo.load_all(sess)
 
 		print "Loaded all repositories: %s" % repos
 		self.assertEqual(len(repos), 6)

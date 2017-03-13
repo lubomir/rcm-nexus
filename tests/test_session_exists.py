@@ -1,6 +1,6 @@
 
 from base import NexupBaseTest
-import nexup
+import rcm_nexus
 import responses
 import os
 import yaml
@@ -15,7 +15,7 @@ class TestSessionExists(NexupBaseTest):
 
 		responses.add(responses.HEAD, conf.url + path, status=200)
 
-		sess = nexup.session.Session(conf)
+		sess = rcm_nexus.session.Session(conf)
 		self.assertEqual(sess.exists(path), True)
 		self.assertEqual(len(responses.calls), 1)
 
@@ -26,7 +26,7 @@ class TestSessionExists(NexupBaseTest):
 
 		responses.add(responses.HEAD, conf.url + path, status=404)
 
-		sess = nexup.session.Session(conf)
+		sess = rcm_nexus.session.Session(conf)
 		self.assertEqual(sess.exists(path), False)
 		self.assertEqual(len(responses.calls), 1)
 
@@ -37,7 +37,7 @@ class TestSessionExists(NexupBaseTest):
 
 		responses.add(responses.HEAD, conf.url + path, status=500, body="Test error")
 
-		sess = nexup.session.Session(conf)
+		sess = rcm_nexus.session.Session(conf)
 		try:
 			self.assertEqual(sess.exists(path), False)
 			self.fail('should have failed with exception on 500 response')
@@ -53,7 +53,7 @@ class TestSessionExists(NexupBaseTest):
 
 		responses.add(responses.HEAD, conf.url + path, status=500, body="Test error")
 
-		sess = nexup.session.Session(conf)
+		sess = rcm_nexus.session.Session(conf)
 		try:
 			self.assertEqual(sess.exists(path, fail=False), False)
 		except:

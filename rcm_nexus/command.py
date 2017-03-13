@@ -17,7 +17,7 @@ PRERELEASE_GROUP_NAME = 'product-earlyaccess'
 
 @click.command()
 @click.argument('repo', type=click.Path(exists=True))
-@click.option('--environment', '-e', help='The target Nexus environment (from ~/.config/nexup/nexup.yaml)')
+@click.option('--environment', '-e', help='The target Nexus environment (from ~/.config/rcm-nexus/config.yaml)')
 @click.option('--product', '-p', help='The product key, used to lookup profileId from the configuration')
 @click.option('--version', '-v', help='The product version, used in repository definition metadata')
 @click.option('--ga', '-g', is_flag=True, default=False, help='Push content to the GA group (as opposed to earlyaccess)')
@@ -83,7 +83,7 @@ def push(repo, environment, product, version, ga=False, debug=False):
     
 @click.command()
 @click.argument('staging_repo_name')
-@click.option('--environment', '-e', help='The target Nexus environment (from ~/.config/nexup/nexup.yaml)')
+@click.option('--environment', '-e', help='The target Nexus environment (from ~/.config/rcm-nexus/config.yaml)')
 @click.option('--debug', '-D', is_flag=True, default=False)
 def rollback(args, config, session, delete_log=None, debug=False):
     """Remove the given staging repository from all release groups

@@ -1,4 +1,4 @@
-from nexup import archive
+from rcm_nexus import archive
 from base import NexupBaseTest
 import tempfile
 import os

@@ -31,7 +31,7 @@ extras = {
 setup(
     zip_safe=True,
     use_2to3=use_2to3,
-    name='nexup',
+    name='rcm-nexus',
     version=version,
     long_description=long_description,
     classifiers=[
@@ -60,8 +60,8 @@ setup(
     test_suite="tests",
     entry_points={
       'console_scripts': [
-        'nexup-push = nexup:push',
-        'nexup-rollback = nexup:rollback',
+        'rcm-nexus-push = rcm_nexus:push',
+        'rcm-nexus-rollback = rcm_nexus:rollback',
       ],
     }
 )
