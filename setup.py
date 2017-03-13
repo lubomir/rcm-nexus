@@ -62,6 +62,7 @@ setup(
       'console_scripts': [
         'nexus-push = rcm_nexus:push',
         'nexus-rollback = rcm_nexus:rollback',
+        'nexus-init = rcm_nexus:init',
       ],
     }
 )

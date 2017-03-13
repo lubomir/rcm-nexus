@@ -81,6 +81,43 @@ def load(environment, cli_overrides=None):
 	return NexusConfig(environment, data)
 
 
+def init_config():
+    conf_path = get_config_path()
+    conf_dir = os.path.dirname(conf_path)
+    os.makedirs(conf_dir)
+    
+    conf = {
+        'prod':{
+            URL: 'http://prod.nexus.corp.com/nexus',
+            USERNAME: os.environ['USER'] or 'someuser',
+            PASSWORD: '@oracle:eval:pass rcm-nexus-prod',
+            PROFILE_MAP: {
+                'MYPRODUCT': {
+                    GA_PROFILE: '0123456789',
+                    EA_PROFILE: '9876543210'
+                }
+            }
+        },
+        'stage':{
+            URL: 'http://stage.nexus.corp.com/nexus',
+            USERNAME: os.environ['USER'] or 'someuser',
+            PASSWORD: '@oracle:eval:pass rcm-nexus-stage',
+            PROFILE_MAP: {
+                'MYPRODUCT': {
+                    GA_PROFILE: '0123456789',
+                    EA_PROFILE: '9876543210'
+                }
+            }
+        }
+    }
+
+    with open(conf_path, 'w') as f:
+        yml = yaml.safe_dump(conf)
+        f.write('# For more information see: https://mojo.redhat.com/docs/DOC-1010179')
+        f.write(yml)
+
+    return conf_path
+
 #############################################################################
 # Shamelessly ripped off and modified from bugwarrior:
 #     https://github.com/ralphbean/bugwarrior

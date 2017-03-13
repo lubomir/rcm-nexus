@@ -1,6 +1,7 @@
-from command import push, rollback
+from command import push, rollback, init
 
 __all__ = [
+	'init',
     'push',
     'rollback'
 ]
