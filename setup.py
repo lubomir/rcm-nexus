@@ -9,7 +9,7 @@ if sys.version_info >= (3,):
 else:
     use_2to3 = False
 
-version='1.0.0'
+version='1.1.0'
 
 f = open('README.rst')
 long_description = f.read().strip()
@@ -60,8 +60,8 @@ setup(
     test_suite="tests",
     entry_points={
       'console_scripts': [
-        'rcm-nexus-push = rcm_nexus:push',
-        'rcm-nexus-rollback = rcm_nexus:rollback',
+        'nexus-push = rcm_nexus:push',
+        'nexus-rollback = rcm_nexus:rollback',
       ],
     }
 )
