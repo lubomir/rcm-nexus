@@ -33,7 +33,7 @@ rm -rf $RPM_BUILD_ROOT
 
 %files
 %defattr(-,root,root,-)
-%doc LICENSE README.rst TODO
+%doc LICENSE README.rst
 %{python_sitelib}/*
 %{_bindir}/*
 
