@@ -15,11 +15,14 @@ class TestGroup(NexupBaseTest):
         data={
             'test': {
                 config.URL: url,
-                config.PROFILE_MAP: {
-                    'eap': {
-                        config.GA_PROFILE: str(ga_profile),
-                        config.EA_PROFILE: '9876543210'
-                    }
+            }
+        }
+
+        profile_map = {
+            'test':{
+                'eap': {
+                    config.GA_PROFILE: str(ga_profile),
+                    config.EA_PROFILE: '9876543210'
                 }
             }
         }
@@ -34,7 +37,7 @@ class TestGroup(NexupBaseTest):
         </promoteRequest>
         """ % expected_repo_id
 
-        rc = self.write_config(data)
+        rc = self.write_config(data, profile_map)
         conf = config.load('test')
 
         profile_id = conf.get_profile_id( 'eap', is_ga=True )
@@ -55,18 +58,21 @@ class TestGroup(NexupBaseTest):
         data={
             'test': {
                 config.URL: url,
-                config.PROFILE_MAP: {
-                    'eap': {
-                        config.GA_PROFILE: str(ga_profile),
-                        config.EA_PROFILE: '9876543210'
-                    }
+            }
+        }
+
+        profile_map = {
+            'test':{
+                'eap': {
+                    config.GA_PROFILE: str(ga_profile),
+                    config.EA_PROFILE: '9876543210'
                 }
             }
         }
 
         repo_id = 'xyz-1001'
 
-        rc = self.write_config(data)
+        rc = self.write_config(data, profile_map)
         conf = config.load('test')
 
         profile_id = conf.get_profile_id( 'eap', is_ga=True )

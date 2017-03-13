@@ -70,7 +70,7 @@ class NexupBaseTest(unittest.TestCase):
                 else:
                     f.write(content)
 
-    def write_config(self, conf):
+    def write_config(self, conf, profile_data={}):
         """
         Create an empty file in the temporary directory, return the full path.
         """
@@ -88,10 +88,18 @@ class NexupBaseTest(unittest.TestCase):
 
             f.write(yml)
 
+        fdir = os.path.dirname(fpath)
+        for e in profile_data.keys():
+            profile_mappings = os.path.join(fdir, "%s.yaml" % e)
+            print "Writing profile-mapping YAML: %s" % profile_mappings
+            with open(profile_mappings, 'w') as f:
+                yml = yaml.safe_dump(profile_data[e])
+                f.write(yml)
+
         return fpath
 
-    def create_and_load_conf(self, conf={'test':{rcm_nexus.config.URL: TEST_BASEURL}}):
-        fpath = self.write_config(conf)
+    def create_and_load_conf(self, conf={'test':{rcm_nexus.config.URL: TEST_BASEURL}}, profile_data={}):
+        fpath = self.write_config(conf, profile_data)
         return rcm_nexus.config.load('test')
 
 

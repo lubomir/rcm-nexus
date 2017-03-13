@@ -16,6 +16,29 @@ TECHPREVIEW_GROUP_NAME = 'product-techpreview'
 PRERELEASE_GROUP_NAME = 'product-earlyaccess'
 
 @click.command()
+def init():
+    """Create a starter configuration for rcm-nexus.
+
+    More Information: https://mojo.redhat.com/docs/DOC-1010179
+    """
+    conf_path = config.init_config()
+    print """Wrote starter config to: 
+
+    %s
+
+    Next steps:
+
+    - Modify configuration to include each Nexus environment you intend to manage.
+    - Fine tune each environment's configuration (username, ssl-verify, etc.).
+    - Setup passwords (`pass` is a nice tool for this) to match the configured password keys.
+    - Add Nexus staging profiles for each product you intend to manage via Nexus.
+    
+    For more information on using rcm-nexus (nexus-push, nexus-rollback), see:
+
+    https://mojo.redhat.com/docs/DOC-1010179
+    """ % conf_path
+
+@click.command()
 @click.argument('repo', type=click.Path(exists=True))
 @click.option('--environment', '-e', help='The target Nexus environment (from ~/.config/rcm-nexus/config.yaml)')
 @click.option('--product', '-p', help='The product key, used to lookup profileId from the configuration')
@@ -29,7 +52,7 @@ def push(repo, environment, product, version, ga=False, debug=False):
     More Information: https://mojo.redhat.com/docs/DOC-1010179
     """
 
-    nexus_config = config.load(environment)
+    nexus_config = config.load(environment, debug)
 
     if release:
         groups = [RELEASE_GROUP_NAME, TECHPREVIEW_GROUP_NAME]
@@ -91,7 +114,7 @@ def rollback(args, config, session, delete_log=None, debug=False):
     More Information: https://mojo.redhat.com/docs/DOC-1010179
     """
 
-    nexus_config = config.load(environment)
+    nexus_config = config.load(environment, debug)
 
     groups = [RELEASE_GROUP_NAME, TECHPREVIEW_GROUP_NAME, PRERELEASE_GROUP_NAME]
 
