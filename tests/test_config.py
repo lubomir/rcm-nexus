@@ -26,16 +26,20 @@ class TestConfigLoad(NexupBaseTest):
         data={
             'test': {
                 config.URL: url,
-                config.PROFILE_MAP: {
-                    'eap': {
-                        config.GA_PROFILE: str(ga_profile),
-                        config.EA_PROFILE: '9876543210'
-                    }
+            }
+        }
+
+        profile_map = {
+            'test':{
+                'eap': {
+                    config.GA_PROFILE: str(ga_profile),
+                    config.EA_PROFILE: '9876543210'
                 }
             }
         }
-        rc = self.write_config(data)
-        nxconfig = config.load('test')
+
+        rc = self.write_config(data, profile_map)
+        nxconfig = config.load('test', debug=True)
         profile_id = nxconfig.get_profile_id('eap', is_ga=True)
 
         self.assertEqual(profile_id, ga_profile)
@@ -46,15 +50,19 @@ class TestConfigLoad(NexupBaseTest):
         data={
             'test': {
                 config.URL: url,
-                config.PROFILE_MAP: {
-                    'eap': {
-                        config.GA_PROFILE: '9876543210',
-                        config.EA_PROFILE: str(ea_profile)
-                    }
+            }
+        }
+
+        profile_map = {
+            'test':{
+                'eap': {
+                    config.GA_PROFILE: '9876543210',
+                    config.EA_PROFILE: str(ea_profile)
                 }
             }
         }
-        rc = self.write_config(data)
+
+        rc = self.write_config(data, profile_map)
         nxconfig = config.load('test')
         profile_id = nxconfig.get_profile_id('eap', is_ga=False)
 

@@ -12,13 +12,12 @@ PASSWORD='password'
 SSL_VERIFY='ssl-verify'
 PREEMPTIVE_AUTH='preemptive-auth'
 INTERACTIVE='interactive'
-PROFILE_MAP = 'profile-map'
 
 GA_PROFILE = 'ga'
 EA_PROFILE = 'ea'
 
 class NexusConfig(object):
-    def __init__(self, name, data):
+    def __init__(self, name, data, profile_data):
         self.name = name
         self.url = data[URL]
         self.ssl_verify = data.get(SSL_VERIFY, True)
@@ -26,7 +25,7 @@ class NexusConfig(object):
         self.username = data.get(USERNAME, None)
         self.password = data.get(PASSWORD, None)
         self.interactive = data.get(INTERACTIVE, True)
-        self.profile_map = data.get(PROFILE_MAP, {})
+        self.profile_map = profile_data
 
     def get_password(self):
         if self.password and self.password.startswith("@oracle:"):
@@ -36,7 +35,7 @@ class NexusConfig(object):
     def get_profile_id(self, product, is_ga):
         profiles = self.profile_map.get(product)
         if profiles is None:
-            raise Exception( "Product %s not configured in 'profile-maps' of configuration: %s (case-sensitive)" % (product, config.name) )
+            raise Exception( "No staging profiles found for: '%s' in environment: %s" % (product, self.name) )
 
         quality_level = GA_PROFILE if is_ga is True else EA_PROFILE
         profile_id = profiles.get(quality_level)
@@ -65,20 +64,36 @@ def die(error_msg):
     print error_msg
     sys.exit(1)
 
-def load(environment, cli_overrides=None):
-	config_path = get_config_path()
-	data = None
-	with open(config_path) as f:
-		dataMap = yaml.safe_load(f)
-		data=dataMap.get(environment)
+def load(environment, cli_overrides=None, debug=False):
+    config_path = get_config_path()
+    data = None
 
-	if data is None:
-		die("Missing configuration for environment: %s (config file: %s)" % (environment, config_path))
+    if debug is True:
+        print "Loading main config: %s" % config_path
+    with open(config_path) as f:
+        dataMap = yaml.safe_load(f)
+        data=dataMap.get(environment)
 
-	if cli_overrides is not None:
-		data.update(cli_overrides)
+    if data is None:
+        die("Missing configuration for environment: %s (config file: %s)" % (environment, config_path))
 
-	return NexusConfig(environment, data)
+    if cli_overrides is not None:
+        data.update(cli_overrides)
+
+    profiles = os.path.join(os.path.dirname(config_path), "%s.yaml" % environment)
+    
+    if debug is True:
+        print "Loading staging profiles: %s" % profiles
+    profile_data = {}
+    if os.path.exists(profiles):
+        with open(profiles) as f:
+            profile_data = yaml.safe_load(f)
+        if debug is True:
+            print "Loaded %d product profiles for: %s" % (len(profile_data.keys()), environment)
+    elif debug is True:
+        print "WARNING: No profile mappings found in: %s" % profiles
+
+    return NexusConfig(environment, data, profile_data)
 
 
 def init_config():
@@ -91,30 +106,32 @@ def init_config():
             URL: 'http://prod.nexus.corp.com/nexus',
             USERNAME: os.environ['USER'] or 'someuser',
             PASSWORD: '@oracle:eval:pass rcm-nexus-prod',
-            PROFILE_MAP: {
-                'MYPRODUCT': {
-                    GA_PROFILE: '0123456789',
-                    EA_PROFILE: '9876543210'
-                }
-            }
         },
         'stage':{
             URL: 'http://stage.nexus.corp.com/nexus',
             USERNAME: os.environ['USER'] or 'someuser',
             PASSWORD: '@oracle:eval:pass rcm-nexus-stage',
-            PROFILE_MAP: {
-                'MYPRODUCT': {
-                    GA_PROFILE: '0123456789',
-                    EA_PROFILE: '9876543210'
-                }
-            }
+        }
+    }
+
+    profile_data = {
+        'MYPRODUCT': {
+            GA_PROFILE: '0123456789',
+            EA_PROFILE: '9876543210'
         }
     }
 
     with open(conf_path, 'w') as f:
         yml = yaml.safe_dump(conf)
-        f.write('# For more information see: https://mojo.redhat.com/docs/DOC-1010179')
+        f.write("# For more information see: https://mojo.redhat.com/docs/DOC-1010179\n\n")
         f.write(yml)
+
+    for e in conf.keys():
+        profile_path = os.path.join(conf_dir, "%s.yaml" % e)
+        with open(profile_path, 'w') as f:
+            yml = yaml.safe_dump(profile_data)
+            f.write("# For more information see: https://mojo.redhat.com/docs/DOC-1010179\n\n")
+            f.write(yml)
 
     return conf_path
 
