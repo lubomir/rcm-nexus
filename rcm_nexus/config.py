@@ -98,19 +98,23 @@ def load(environment, cli_overrides=None, debug=False):
 
 def init_config():
     conf_path = get_config_path()
+    if os.path.exists(conf_path):
+        die("%s already exists!" % conf_path)
+
     conf_dir = os.path.dirname(conf_path)
-    os.makedirs(conf_dir)
+    if not os.path.isdir(conf_dir):
+        os.makedirs(conf_dir)
 
     user = os.environ.get('USER') or 'someuser'
     
     conf = {
         'prod':{
-            URL: 'http://prod.nexus.corp.com/nexus',
+            URL: 'http://repository.prod.corp.com/nexus',
             USERNAME: user,
             PASSWORD: '@oracle:eval:pass rcm-nexus-prod',
         },
         'stage':{
-            URL: 'http://stage.nexus.corp.com/nexus',
+            URL: 'http://repository.stage.corp.com/nexus',
             USERNAME: user,
             PASSWORD: '@oracle:eval:pass rcm-nexus-stage',
         }
