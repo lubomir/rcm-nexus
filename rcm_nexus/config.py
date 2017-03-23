@@ -129,14 +129,14 @@ def init_config():
 
     with open(conf_path, 'w') as f:
         yml = yaml.safe_dump(conf)
-        f.write("# For more information see: https://mojo.redhat.com/docs/DOC-1010179\n\n")
+        f.write("# For more information see: https://mojo.redhat.com/docs/DOC-1132234\n\n")
         f.write(yml)
 
     for e in conf.keys():
         profile_path = os.path.join(conf_dir, "%s.yaml" % e)
         with open(profile_path, 'w') as f:
             yml = yaml.safe_dump(profile_data)
-            f.write("# For more information see: https://mojo.redhat.com/docs/DOC-1010179\n\n")
+            f.write("# For more information see: https://mojo.redhat.com/docs/DOC-1132234\n\n")
             f.write(yml)
 
     return conf_path
