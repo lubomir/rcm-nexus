@@ -19,7 +19,7 @@ PRERELEASE_GROUP_NAME = 'product-earlyaccess'
 def init():
     """Create a starter configuration for rcm-nexus.
 
-    More Information: https://mojo.redhat.com/docs/DOC-1010179
+    More Information: https://mojo.redhat.com/docs/DOC-1132234
     """
     conf_path = config.init_config()
     print """Wrote starter config to: 
@@ -35,7 +35,7 @@ def init():
     
     For more information on using rcm-nexus (nexus-push, nexus-rollback), see:
 
-    https://mojo.redhat.com/docs/DOC-1010179
+    https://mojo.redhat.com/docs/DOC-1132234
     """ % conf_path
 
 @click.command()
@@ -49,7 +49,7 @@ def push(repo, environment, product, version, ga=False, debug=False):
     """Push Apache Maven repository content to a Nexus staging repository, 
     then add the staging repository to appropriate content groups.
 
-    More Information: https://mojo.redhat.com/docs/DOC-1010179
+    More Information: https://mojo.redhat.com/docs/DOC-1132234
     """
 
     nexus_config = config.load(environment, debug)
@@ -111,7 +111,7 @@ def push(repo, environment, product, version, ga=False, debug=False):
 def rollback(args, config, session, delete_log=None, debug=False):
     """Remove the given staging repository from all release groups
 
-    More Information: https://mojo.redhat.com/docs/DOC-1010179
+    More Information: https://mojo.redhat.com/docs/DOC-1132234
     """
 
     nexus_config = config.load(environment, debug)
