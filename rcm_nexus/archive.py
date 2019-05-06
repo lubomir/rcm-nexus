@@ -61,7 +61,9 @@ class Zipper(object):
         if self.zip is None or self.file_count >= self.max_count or self.file_size + size >= self.max_size:
             if self.zip is not None:
                 self.zip.close()
-                self.counter+=1
+                self.counter += 1
+                self.file_count = 0
+                self.file_size = 0
 
             self.zip = zipfile.ZipFile(os.path.join(self.out_dir, OUT_ZIP_FORMAT % self.counter), mode='w')
 
@@ -75,8 +77,8 @@ class Zipper(object):
                     filename = ''
 
         self.zip.writestr(filename, stream_func())
-        self.file_count+=1
-        self.file_size+=size
+        self.file_count += 1
+        self.file_size += size
 
     def close(self):
         if self.zip is not None:
