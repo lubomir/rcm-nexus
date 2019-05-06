@@ -52,9 +52,9 @@ def push(repo, environment, product, version, ga=False, debug=False):
     More Information: https://mojo.redhat.com/docs/DOC-1010179
     """
 
-    nexus_config = config.load(environment, debug)
+    nexus_config = config.load(environment, debug=debug)
 
-    if release:
+    if ga:
         groups = [RELEASE_GROUP_NAME, TECHPREVIEW_GROUP_NAME]
     else:
         groups = [PRERELEASE_GROUP_NAME]
@@ -114,7 +114,7 @@ def rollback(args, config, session, delete_log=None, debug=False):
     More Information: https://mojo.redhat.com/docs/DOC-1010179
     """
 
-    nexus_config = config.load(environment, debug)
+    nexus_config = config.load(environment, debug=debug)
 
     groups = [RELEASE_GROUP_NAME, TECHPREVIEW_GROUP_NAME, PRERELEASE_GROUP_NAME]
 
