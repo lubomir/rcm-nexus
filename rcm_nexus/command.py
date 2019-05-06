@@ -9,6 +9,7 @@ import os.path
 import sys
 import re
 import click
+import shutil
 import tempfile
 
 RELEASE_GROUP_NAME = 'product-ga'
@@ -103,7 +104,10 @@ def push(repo, environment, product, version, ga=False, debug=False):
     finally:
         if session is not None:
             session.close()
-    
+
+        shutil.rmtree(zips_dir)
+
+
 @click.command()
 @click.argument('staging_repo_name')
 @click.option('--environment', '-e', help='The target Nexus environment (from ~/.config/rcm-nexus/config.yaml)')
