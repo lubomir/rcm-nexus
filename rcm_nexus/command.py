@@ -86,7 +86,7 @@ def push(repo, environment, product, version, ga=False, debug=False):
         # HTTP PUT clean repository zips to Nexus.
         delete_first = True
         for zipfile in zip_paths:
-            repo.push_zip(session, staging_repo_id, zipfile, delete_first)
+            repos.push_zip(session, staging_repo_id, zipfile, delete_first)
             delete_first = False
 
         # Close staging repository
