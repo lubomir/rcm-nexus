@@ -16,6 +16,10 @@ RELEASE_GROUP_NAME = 'product-ga'
 TECHPREVIEW_GROUP_NAME = 'product-techpreview'
 PRERELEASE_GROUP_NAME = 'product-earlyaccess'
 
+EARLY_ACCESS_PROFILE_ID = "537461ce29c60"
+GA_PROFILE_ID = "53776abb083b6"
+
+
 @click.command()
 def init():
     """Create a starter configuration for rcm-nexus.
@@ -55,11 +59,6 @@ def push(repo, environment, product, version, ga=False, debug=False):
 
     nexus_config = config.load(environment, debug=debug)
 
-    if ga:
-        groups = [RELEASE_GROUP_NAME, TECHPREVIEW_GROUP_NAME]
-    else:
-        groups = [PRERELEASE_GROUP_NAME]
-
     session = Session(nexus_config, debug=debug)
     
     try:
@@ -79,7 +78,6 @@ def push(repo, environment, product, version, ga=False, debug=False):
             # Open the zip, walk the entries and normalize the structure to clean zip (if necessary)
             zip_paths = archive.create_partitioned_zips_from_zip(repo, zips_dir)
 
-        
         # Open new staging repository with description
         staging_repo_id = staging.start_staging_repo(session, nexus_config, product, version, ga)
 
@@ -93,15 +91,15 @@ def push(repo, environment, product, version, ga=False, debug=False):
         # Close staging repository
         staging.finish_staging_repo(session, nexus_config, staging_repo_id, product, version, ga)
 
-        for group_id in groups:
-            group = groups.load(session, group_id, ignore_missing=True)
-            if group is not None:
-                print "Adding %s to group: %s" % (staging_repo_id, group_id)
+        if staging.verify_action(session, staging_repo_id, "close"):
+            sys.exit(1)
 
-                group.append_member(session, staging_repo_id).save(session)
-            else:
-                print "No such group: %s" % group_id
-                raise Exception("No such group: %s" % group_id)
+        print("Promoting repo")
+        promote_profile = GA_PROFILE_ID if ga else EARLY_ACCESS_PROFILE_ID
+        staging.promote(session, promote_profile, staging_repo_id, product, version, ga)
+
+        if staging.verify_action(session, staging_repo_id, "promote"):
+            sys.exit(1)
     finally:
         if session is not None:
             session.close()
