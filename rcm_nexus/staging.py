@@ -16,11 +16,11 @@ def start_staging_repo(session, config, product, version, is_ga):
     etree.SubElement(data, 'description').text=_get_staging_description(product, version, is_ga)
 
     xml = etree.tostring( request_data, xml_declaration=True, pretty_print=True, encoding='UTF-8')
-    (response,text) = session.post(path, xml)
+    (response, text) = session.post(path, xml)
 
     # TODO: Error handling!
 
-    repo_id = etree.fromstring(text).xpath('/promoteRequest/data/stagedRepositoryId/text()')
+    repo_id = etree.fromstring(text).xpath('/promoteResponse/data/stagedRepositoryId/text()')
     return repo_id[0]
 
 def finish_staging_repo(session, config, repo_id, product, version, is_ga):
