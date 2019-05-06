@@ -70,11 +70,10 @@ class Zipper(object):
         if '/' in filename:
             filename_parts = filename.split('/')
 
-            if 'maven' in filename_parts[0]:
-                if len(filename_parts) > 1:
-                    filename = '/'.join(filename_parts[1:])
-                else:
-                    filename = ''
+            while filename_parts and "maven-repository" in filename_parts[0]:
+                del filename_parts[0]
+
+            filename = "/".join(filename_parts)
 
         self.zip.writestr(filename, stream_func())
         self.file_count += 1
