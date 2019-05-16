@@ -12,6 +12,8 @@ PASSWORD = 'password'
 SSL_VERIFY = 'ssl-verify'
 PREEMPTIVE_AUTH = 'preemptive-auth'
 INTERACTIVE = 'interactive'
+GA_PROMOTE_PROFILE = "ga-promote-profile"
+EA_PROMOTE_PROFILE = "ea-promote-profile"
 
 GA_PROFILE = 'ga'
 EA_PROFILE = 'ea'
@@ -26,6 +28,8 @@ class NexusConfig(object):
         self.password = data.get(PASSWORD, None)
         self.interactive = data.get(INTERACTIVE, True)
         self.profile_map = profile_data
+        self.ga_promote_profile = data.get(GA_PROMOTE_PROFILE)
+        self.ea_promote_profile = data.get(EA_PROMOTE_PROFILE)
 
     def get_password(self):
         if self.password and self.password.startswith("@oracle:"):
@@ -46,6 +50,8 @@ class NexusConfig(object):
 
         return profile_id
 
+    def get_promote_profile_id(self, is_ga):
+        return self.ga_promote_profile if is_ga else self.ea_promote_profile
 
     def __str__(self):
         return """RCMNexusConfig [
@@ -108,11 +114,15 @@ def init_config():
             URL: 'http://prod.nexus.corp.com/nexus',
             USERNAME: user,
             PASSWORD: '@oracle:eval:pass rcm-nexus-prod',
+            EA_PROMOTE_PROFILE: "123",
+            GA_PROMOTE_PROFILE: "456",
         },
         'stage':{
             URL: 'http://stage.nexus.corp.com/nexus',
             USERNAME: user,
             PASSWORD: '@oracle:eval:pass rcm-nexus-stage',
+            EA_PROMOTE_PROFILE: "321",
+            GA_PROMOTE_PROFILE: "654",
         }
     }
 

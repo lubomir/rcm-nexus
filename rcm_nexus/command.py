@@ -10,13 +10,6 @@ import click
 import shutil
 import tempfile
 
-RELEASE_GROUP_NAME = 'product-ga'
-TECHPREVIEW_GROUP_NAME = 'product-techpreview'
-PRERELEASE_GROUP_NAME = 'product-earlyaccess'
-
-EARLY_ACCESS_PROFILE_ID = "537461ce29c60"
-GA_PROFILE_ID = "53776abb083b6"
-
 
 @click.command()
 def init():
@@ -93,7 +86,7 @@ def push(repo, environment, product, version, ga=False, debug=False):
             sys.exit(1)
 
         print("Promoting repo")
-        promote_profile = GA_PROFILE_ID if ga else EARLY_ACCESS_PROFILE_ID
+        promote_profile = nexus_config.get_promote_profile_id(ga)
         staging.promote(session, promote_profile, staging_repo_id, product, version, ga)
 
         if staging.verify_action(session, staging_repo_id, "promote"):
