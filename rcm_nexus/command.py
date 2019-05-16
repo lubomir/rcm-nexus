@@ -2,12 +2,10 @@ import time
 from rcm_nexus.session import Session
 import rcm_nexus.config as config
 import rcm_nexus.repo as repos
-import rcm_nexus.group as groups
 import rcm_nexus.archive as archive
 import rcm_nexus.staging as staging
 import os.path
 import sys
-import re
 import click
 import shutil
 import tempfile
