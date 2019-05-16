@@ -5,8 +5,9 @@ from lxml import etree
 
 STAGE_START_FORMAT = '/service/local/staging/profiles/{profile_id}/start'
 STAGE_FINISH_FORMAT = '/service/local/staging/profiles/{profile_id}/finish'
-STAGE_PROMOTE_FORMAT = '/service/local/staging/bulk/promote'
 STAGE_REPO_FORMAT = "/service/local/staging/repository/{repo_id}"
+STAGE_DROP_FORMAT = "/service/local/staging/profiles/{profile_id}/drop"
+STAGE_PROMOTE_FORMAT = '/service/local/staging/bulk/promote'
 STAGE_REPO_ACTIVITY_FORMAT = "/service/local/staging/repository/{repo_id}/activity"
 
 
@@ -43,6 +44,31 @@ def finish_staging_repo(session, config, repo_id, product, version, is_ga):
 
     # TODO: Error handling!
     # FIXME: Handle verification failure!
+
+
+def drop_staging_repo(session, repo_id):
+    """
+    Drop the promoted repository. We need to first query for profile ID that
+    was used to create the repo, then issue a request to drop it.
+    """
+    path = STAGE_REPO_FORMAT.format(repo_id=repo_id)
+    response, _ = session.get(path, headers={"Accept": "application/json"})
+    profile_id = response.json()["profileId"]
+
+    path = STAGE_DROP_FORMAT.format(profile_id=profile_id)
+    request_data = etree.Element("promoteRequest")
+    data = etree.SubElement(request_data, "data")
+    etree.SubElement(data, "stagedRepositoryId").text = repo_id
+
+    xml = etree.tostring(
+        request_data, xml_declaration=True, pretty_print=True, encoding="UTF-8"
+    )
+    response, _ = session.post(path, xml, fail=False)
+    if response.status_code != 201:
+        for msg in etree.fromstring(response.text).xpath("/nexus-error/errors/error/msg/text()"):
+            print(msg)
+        return False
+    return True
 
 
 def promote(session, profile_id, repo_id, product, version, is_ga):

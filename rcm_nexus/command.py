@@ -111,26 +111,19 @@ def push(repo, environment, product, version, ga=False, debug=False):
 @click.argument('staging_repo_name')
 @click.option('--environment', '-e', help='The target Nexus environment (from ~/.config/rcm-nexus/config.yaml)')
 @click.option('--debug', '-D', is_flag=True, default=False)
-def rollback(args, config, session, delete_log=None, debug=False):
-    """Remove the given staging repository from all release groups
+def rollback(staging_repo_name, environment, debug=False):
+    """Drop given staging repository.
 
     More Information: https://mojo.redhat.com/docs/DOC-1010179
     """
-
     nexus_config = config.load(environment, debug=debug)
 
-    groups = [RELEASE_GROUP_NAME, TECHPREVIEW_GROUP_NAME, PRERELEASE_GROUP_NAME]
+    session = Session(nexus_config, debug=debug)
 
-    session = Session(config.base_url, user, debug=debug, disable_ssl_validation=config.permissive_ssl, preemptive_auth=config.preemptive_auth)
-    
     try:
-        print "Removing content of: %s" % staging_repo_name
-        
-        for group_name in groups:
-            group = groups.load(session, group_name, True)
-            if group is not None:
-                print "Removing %s from group %s" % (staging_repo_name, group_name)
-                group.remove_member(session, staging_repo_name).save(session)
+        print "Dropping repository %s" % staging_repo_name
+        if not staging.drop_staging_repo(session, staging_repo_name):
+            sys.exit(1)
     finally:
         if session is not None:
             session.close()
