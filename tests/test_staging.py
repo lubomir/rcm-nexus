@@ -29,12 +29,12 @@ class TestGroup(NexupBaseTest):
 
         expected_repo_id = 'xyz-1001'
         response_xml ="""
-        <promoteRequest>
+        <promoteResponse>
           <data>
             <stagedRepositoryId>%s</stagedRepositoryId>
             <description>Unused Description</description>
           </data>
-        </promoteRequest>
+        </promoteResponse>
         """ % expected_repo_id
 
         rc = self.write_config(data, profile_map)

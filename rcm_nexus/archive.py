@@ -36,6 +36,9 @@ def create_partitioned_zips_from_zip(src, out_dir, max_count=MAX_COUNT, max_size
     zips = Zipper(out_dir, max_count, max_size)
     zf = zipfile.ZipFile(src)
     for info in zf.infolist():
+        if info.filename.endswith("/") and info.file_size == 0:
+            # Skip directories
+            continue
 
         # print "Path: %s (uncompressed size: %s)" % (info.filename, info.file_size)
         zips.append(info.filename, info.file_size, lambda: zf.read(info.filename) )
@@ -58,22 +61,23 @@ class Zipper(object):
         if self.zip is None or self.file_count >= self.max_count or self.file_size + size >= self.max_size:
             if self.zip is not None:
                 self.zip.close()
-                self.counter+=1
+                self.counter += 1
+                self.file_count = 0
+                self.file_size = 0
 
             self.zip = zipfile.ZipFile(os.path.join(self.out_dir, OUT_ZIP_FORMAT % self.counter), mode='w')
 
         if '/' in filename:
             filename_parts = filename.split('/')
 
-            if 'maven' in filename_parts[0]:
-                if len(filename_parts) > 1:
-                    filename = '/'.join(filename_parts[1:])
-                else:
-                    filename = ''
+            while filename_parts and "maven-repository" in filename_parts[0]:
+                del filename_parts[0]
+
+            filename = "/".join(filename_parts)
 
         self.zip.writestr(filename, stream_func())
-        self.file_count+=1
-        self.file_size+=size
+        self.file_count += 1
+        self.file_size += size
 
     def close(self):
         if self.zip is not None:

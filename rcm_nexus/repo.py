@@ -28,7 +28,7 @@ NAMED_REPO_PATH = REPOS_PATH + '/{key}'
 COMPRESSED_CONTENT_PATH = NAMED_REPO_PATH + "/content-compressed{delete}"
 
 def push_zip(session, repo_key, zip_file, delete_first=False):
-    with open(zip_file, 'r') as f:
+    with open(zip_file, 'rb') as f:
         delete_param = ''
         if delete_first:
             delete_param = '?delete=true'

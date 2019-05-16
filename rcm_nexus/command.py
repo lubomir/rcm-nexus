@@ -2,18 +2,14 @@ import time
 from rcm_nexus.session import Session
 import rcm_nexus.config as config
 import rcm_nexus.repo as repos
-import rcm_nexus.group as groups
 import rcm_nexus.archive as archive
 import rcm_nexus.staging as staging
 import os.path
 import sys
-import re
 import click
+import shutil
 import tempfile
 
-RELEASE_GROUP_NAME = 'product-ga'
-TECHPREVIEW_GROUP_NAME = 'product-techpreview'
-PRERELEASE_GROUP_NAME = 'product-earlyaccess'
 
 @click.command()
 def init():
@@ -52,12 +48,7 @@ def push(repo, environment, product, version, ga=False, debug=False):
     More Information: https://mojo.redhat.com/docs/DOC-1132234
     """
 
-    nexus_config = config.load(environment, debug)
-
-    if release:
-        groups = [RELEASE_GROUP_NAME, TECHPREVIEW_GROUP_NAME]
-    else:
-        groups = [PRERELEASE_GROUP_NAME]
+    nexus_config = config.load(environment, debug=debug)
 
     session = Session(nexus_config, debug=debug)
     
@@ -78,56 +69,52 @@ def push(repo, environment, product, version, ga=False, debug=False):
             # Open the zip, walk the entries and normalize the structure to clean zip (if necessary)
             zip_paths = archive.create_partitioned_zips_from_zip(repo, zips_dir)
 
-        
         # Open new staging repository with description
         staging_repo_id = staging.start_staging_repo(session, nexus_config, product, version, ga)
 
         # HTTP PUT clean repository zips to Nexus.
         delete_first = True
-        for zipfile in zip_paths:
-            repo.push_zip(session, staging_repo_id, zipfile, delete_first)
+        for idx, zipfile in enumerate(zip_paths, start=1):
+            print("Uploading zip %s out of %s" % (idx, len(zip_paths)))
+            repos.push_zip(session, staging_repo_id, zipfile, delete_first)
             delete_first = False
 
         # Close staging repository
         staging.finish_staging_repo(session, nexus_config, staging_repo_id, product, version, ga)
 
-        for group_id in groups:
-            group = groups.load(session, group_id, ignore_missing=True)
-            if group is not None:
-                print "Adding %s to group: %s" % (staging_repo_id, group_id)
+        if staging.verify_action(session, staging_repo_id, "close"):
+            sys.exit(1)
 
-                group.append_member(session, staging_repo_id).save(session)
-            else:
-                print "No such group: %s" % group_id
-                raise Exception("No such group: %s" % group_id)
+        print("Promoting repo")
+        promote_profile = nexus_config.get_promote_profile_id(ga)
+        staging.promote(session, promote_profile, staging_repo_id, product, version, ga)
+
+        if staging.verify_action(session, staging_repo_id, "promote"):
+            sys.exit(1)
     finally:
         if session is not None:
             session.close()
-    
+
+        shutil.rmtree(zips_dir)
+
+
 @click.command()
 @click.argument('staging_repo_name')
 @click.option('--environment', '-e', help='The target Nexus environment (from ~/.config/rcm-nexus/config.yaml)')
 @click.option('--debug', '-D', is_flag=True, default=False)
-def rollback(args, config, session, delete_log=None, debug=False):
-    """Remove the given staging repository from all release groups
+def rollback(staging_repo_name, environment, debug=False):
+    """Drop given staging repository.
 
     More Information: https://mojo.redhat.com/docs/DOC-1132234
     """
+    nexus_config = config.load(environment, debug=debug)
 
-    nexus_config = config.load(environment, debug)
+    session = Session(nexus_config, debug=debug)
 
-    groups = [RELEASE_GROUP_NAME, TECHPREVIEW_GROUP_NAME, PRERELEASE_GROUP_NAME]
-
-    session = Session(config.base_url, user, debug=debug, disable_ssl_validation=config.permissive_ssl, preemptive_auth=config.preemptive_auth)
-    
     try:
-        print "Removing content of: %s" % staging_repo_name
-        
-        for group_name in groups:
-            group = groups.load(session, group_name, True)
-            if group is not None:
-                print "Removing %s from group %s" % (staging_repo_name, group_name)
-                group.remove_member(session, staging_repo_name).save(session)
+        print "Dropping repository %s" % staging_repo_name
+        if not staging.drop_staging_repo(session, staging_repo_name):
+            sys.exit(1)
     finally:
         if session is not None:
             session.close()
