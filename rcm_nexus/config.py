@@ -27,7 +27,7 @@ class NexusConfig(object):
         self.ssl_verify = data.get(SSL_VERIFY, True)
         self.preemptive_auth = data.get(PREEMPTIVE_AUTH, False)
         self.username = data.get(USERNAME, getpass.getuser())
-        self.password = data.get(PASSWORD, None)
+        self.password = data.get(PASSWORD, "@oracle:ask_password")
         self.interactive = data.get(INTERACTIVE, True)
         self.profile_map = profile_data
         self.ga_promote_profile = data.get(GA_PROMOTE_PROFILE)
@@ -116,13 +116,11 @@ def init_config():
     conf = {
         'prod':{
             URL: 'http://repository.prod.corp.com/nexus',
-            PASSWORD: '@oracle:eval:pass rcm-nexus-prod',
             EA_PROMOTE_PROFILE: "123",
             GA_PROMOTE_PROFILE: "456",
         },
         'stage':{
             URL: 'http://repository.stage.corp.com/nexus',
-            PASSWORD: '@oracle:eval:pass rcm-nexus-stage',
             EA_PROMOTE_PROFILE: "321",
             GA_PROMOTE_PROFILE: "654",
         }
