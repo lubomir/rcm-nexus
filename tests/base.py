@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 import rcm_nexus
 import traceback
 import os
@@ -81,7 +83,7 @@ class NexupBaseTest(unittest.TestCase):
 
         with open(fpath, 'w') as f:
             yml = yaml.safe_dump(conf)
-            #print """Writing config to: %s
+            #print("""Writing config to: %s)
             #
             #%s
             #""" % (fpath, yml)
@@ -91,7 +93,7 @@ class NexupBaseTest(unittest.TestCase):
         fdir = os.path.dirname(fpath)
         for e in profile_data.keys():
             profile_mappings = os.path.join(fdir, "%s.yaml" % e)
-            print "Writing profile-mapping YAML: %s" % profile_mappings
+            print("Writing profile-mapping YAML: %s" % profile_mappings)
             with open(profile_mappings, 'w') as f:
                 yml = yaml.safe_dump(profile_data[e])
                 f.write(yml)

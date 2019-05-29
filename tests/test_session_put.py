@@ -1,3 +1,4 @@
+from __future__ import print_function
 
 from base import NexupBaseTest
 import rcm_nexus
@@ -75,7 +76,7 @@ class TestSessionPut(NexupBaseTest):
 			resp,content=sess.put(path, request_src, ignore_404=False)
 			self.fail("Should have thrown Exception on 404")
 		except:
-			print "Caught expected Exception"
+			print("Caught expected Exception")
 		finally:
 			self.assertEqual(len(responses.calls), 1)
 
@@ -95,7 +96,7 @@ class TestSessionPut(NexupBaseTest):
 		try:
 			sess.put(path, request_src, ignore_404=False, fail=False)
 		except:
-			print traceback.format_exc()
+			print(traceback.format_exc())
 			self.fail("Should have suppressed Exception on 404.")
 		finally:
 			self.assertEqual(len(responses.calls), 1)
@@ -110,7 +111,7 @@ class TestSessionPut(NexupBaseTest):
 		response_src="Request successful"
 		
 		def callbk(req):
-			print req.url
+			print(req.url)
 			return (203,req.headers,response_src)
 
 		responses.add_callback(responses.PUT, conf.url + path, callback=callbk)

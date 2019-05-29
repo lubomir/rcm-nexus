@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 from rcm_nexus import archive
 from base import NexupBaseTest
 import tempfile
@@ -19,12 +21,12 @@ class ArchiveZipest(NexupBaseTest):
 		zips = archive.create_partitioned_zips_from_dir(srcdir, outdir)
 		self.assertEqual(len(zips), 1)
 
-		print zips
+		print(zips)
 
 		z = zips[0]
 		zf = zipfile.ZipFile(z)
 		for info in zf.infolist():
-			print "%s contains: %s" % (z, info.filename)
+			print("%s contains: %s" % (z, info.filename))
 			self.assertEqual(info.filename in paths, True)
 
 
@@ -41,12 +43,12 @@ class ArchiveZipest(NexupBaseTest):
 		zips = archive.create_partitioned_zips_from_dir(srcdir, outdir)
 		self.assertEqual(len(zips), 1)
 
-		print zips
+		print(zips)
 
 		z = zips[0]
 		zf = zipfile.ZipFile(z)
 		for info in zf.infolist():
-			print "%s contains: %s" % (z, info.filename)
+			print("%s contains: %s" % (z, info.filename))
 			self.assertEqual(info.filename in paths, True)
 
 
@@ -61,12 +63,12 @@ class ArchiveZipest(NexupBaseTest):
 		outdir = tempfile.mkdtemp()
 		zips = archive.create_partitioned_zips_from_dir(srcdir, outdir, max_count=2)
 		self.assertEqual(len(zips), 2)
-		print zips
+		print(zips)
 
 		for z in zips:
 			zf = zipfile.ZipFile(z)
 			for info in zf.infolist():
-				print "%s contains: %s" % (z, info.filename)
+				print("%s contains: %s" % (z, info.filename))
 				self.assertEqual(info.filename in paths, True)
 
 	def test_size_rollover(self):
@@ -81,10 +83,10 @@ class ArchiveZipest(NexupBaseTest):
 		outdir = tempfile.mkdtemp()
 		zips = archive.create_partitioned_zips_from_dir(srcdir, outdir, max_size=2*len(src) + 1)
 		self.assertEqual(len(zips), 2)
-		print zips
+		print(zips)
 
 		for z in zips:
 			zf = zipfile.ZipFile(z)
 			for info in zf.infolist():
-				print "%s contains: %s" % (z, info.filename)
+				print("%s contains: %s" % (z, info.filename))
 				self.assertEqual(info.filename in paths, True)

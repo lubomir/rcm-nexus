@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 import zipfile
 import os
 
@@ -26,7 +28,7 @@ def create_partitioned_zips_from_dir(src, out_dir, max_count=MAX_COUNT, max_size
         for filename in filenames:
             path = os.path.join(dirpath, filename)
             entry_name = os.path.join(dirname, filename)
-            # print "Path: %s (uncompressed size: %s)" % (os.path.join(dirname, filename), os.path.getsize(path))
+            # print("Path: %s (uncompressed size: %s)" % (os.path.join(dirname, filename), os.path.getsize(path)))
             with open(path, 'rb') as f:
                 zips.append(entry_name, os.path.getsize(path), lambda: f.read())
 
@@ -40,7 +42,7 @@ def create_partitioned_zips_from_zip(src, out_dir, max_count=MAX_COUNT, max_size
             # Skip directories
             continue
 
-        # print "Path: %s (uncompressed size: %s)" % (info.filename, info.file_size)
+        # print("Path: %s (uncompressed size: %s)" % (info.filename, info.file_size))
         zips.append(info.filename, info.file_size, lambda: zf.read(info.filename) )
 
     return zips.list()
