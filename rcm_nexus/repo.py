@@ -251,7 +251,7 @@ class Repository(object):
     def render(self, pretty_print=True):
         objectify.deannotate(self.xml, xsi_nil=True)
         etree.cleanup_namespaces(self.xml)
-        return etree.tostring(self.xml, pretty_print=pretty_print)
+        return etree.tostring(self.xml, pretty_print=pretty_print, encoding="unicode")
     
     def content_uri(self):
         if self.xml is not None:
