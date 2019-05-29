@@ -22,6 +22,9 @@ import shutil
 import getpass
 import base64
 
+import six
+
+
 class Enum(object):
     def __init__(self, **kwargs):
         self._all_values = []
@@ -30,7 +33,7 @@ class Enum(object):
             setattr(self, key, val)
             self._all_values.append(val)
             
-            if not isinstance(val, basestring):
+            if not isinstance(val, six.string_types):
                 strkey = key + '_str'
                 strval = str(val)
                 setattr(self, strkey, strval)
