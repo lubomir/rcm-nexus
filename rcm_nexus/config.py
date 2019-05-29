@@ -26,7 +26,7 @@ class NexusConfig(object):
         self.url = data[URL]
         self.ssl_verify = data.get(SSL_VERIFY, True)
         self.preemptive_auth = data.get(PREEMPTIVE_AUTH, False)
-        self.username = data.get(USERNAME, None)
+        self.username = data.get(USERNAME, getpass.getuser())
         self.password = data.get(PASSWORD, None)
         self.interactive = data.get(INTERACTIVE, True)
         self.profile_map = profile_data
@@ -112,20 +112,16 @@ def init_config():
     conf_dir = os.path.dirname(conf_path)
     if not os.path.isdir(conf_dir):
         os.makedirs(conf_dir)
-
-    user = os.environ.get('USER') or 'someuser'
     
     conf = {
         'prod':{
             URL: 'http://repository.prod.corp.com/nexus',
-            USERNAME: user,
             PASSWORD: '@oracle:eval:pass rcm-nexus-prod',
             EA_PROMOTE_PROFILE: "123",
             GA_PROMOTE_PROFILE: "456",
         },
         'stage':{
             URL: 'http://repository.stage.corp.com/nexus',
-            USERNAME: user,
             PASSWORD: '@oracle:eval:pass rcm-nexus-stage',
             EA_PROMOTE_PROFILE: "321",
             GA_PROMOTE_PROFILE: "654",
