@@ -78,9 +78,12 @@ def load(environment, cli_overrides=None, debug=False):
 
     if debug is True:
         print("Loading main config: %s" % config_path)
-    with open(config_path) as f:
-        dataMap = yaml.safe_load(f)
-        data=dataMap.get(environment)
+    try:
+        with open(config_path) as f:
+            dataMap = yaml.safe_load(f)
+            data = dataMap.get(environment)
+    except IOError as exc:
+        die("Failed to load config file: %s" % exc)
 
     if data is None:
         die("Missing configuration for environment: %s (config file: %s)" % (environment, config_path))
@@ -94,8 +97,11 @@ def load(environment, cli_overrides=None, debug=False):
         print("Loading staging profiles: %s" % profiles)
     profile_data = {}
     if os.path.exists(profiles):
-        with open(profiles) as f:
-            profile_data = yaml.safe_load(f)
+        try:
+            with open(profiles) as f:
+                profile_data = yaml.safe_load(f)
+        except IOError as exc:
+            die("Failed to load config file: %s" % exc)
         if debug is True:
             print("Loaded %d product profiles for: %s" % (len(profile_data.keys()), environment))
     elif debug is True:
