@@ -17,6 +17,15 @@ WORDS = ['/usr/share/dict/words', '/usr/dict/words']
 TEST_BASEURL='http://localhost:8080/nexus'
 TEST_INPUT_DIR='test-input'
 
+TEST_CONFIG = {
+    'test': {
+        rcm_nexus.config.URL: TEST_BASEURL,
+        rcm_nexus.config.USERNAME: "jdoe",
+        rcm_nexus.config.PASSWORD: "password",
+    }
+}
+
+
 class NexupBaseTest(unittest.TestCase):
     """
     Creates config files, configures the environment, and cleans up afterwards.
@@ -100,7 +109,7 @@ class NexupBaseTest(unittest.TestCase):
 
         return fpath
 
-    def create_and_load_conf(self, conf={'test':{rcm_nexus.config.URL: TEST_BASEURL}}, profile_data={}):
+    def create_and_load_conf(self, conf=TEST_CONFIG, profile_data={}):
         fpath = self.write_config(conf, profile_data)
         return rcm_nexus.config.load('test')
 
