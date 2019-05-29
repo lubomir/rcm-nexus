@@ -1,7 +1,7 @@
 from __future__ import print_function
 
 from rcm_nexus import archive
-from base import NexupBaseTest
+from .base import NexupBaseTest
 import tempfile
 import os
 from random import randint

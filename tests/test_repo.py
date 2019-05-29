@@ -1,6 +1,6 @@
 from __future__ import print_function
 
-from base import (TEST_INPUT_DIR, NexupBaseTest)
+from .base import (TEST_INPUT_DIR, NexupBaseTest)
 import rcm_nexus
 import responses
 import os
