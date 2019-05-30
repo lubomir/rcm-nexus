@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 import time
 from rcm_nexus.session import Session
 import rcm_nexus.config as config
@@ -18,7 +20,7 @@ def init():
     More Information: https://mojo.redhat.com/docs/DOC-1132234
     """
     conf_path = config.init_config()
-    print """Wrote starter config to: 
+    print("""Wrote starter config to:
 
     %s
 
@@ -32,7 +34,7 @@ def init():
     For more information on using rcm-nexus (nexus-push, nexus-rollback), see:
 
     https://mojo.redhat.com/docs/DOC-1132234
-    """ % conf_path
+    """ % conf_path)
 
 @click.command()
 @click.argument('repo', type=click.Path(exists=True))
@@ -53,18 +55,18 @@ def push(repo, environment, product, version, ga=False, debug=False):
     session = Session(nexus_config, debug=debug)
     
     try:
-        print "Pushing: %s content to: %s" % (repo, environment)
+        print("Pushing: %s content to: %s" % (repo, environment))
         
         # produce a set of clean repository zips for PUT upload.
         zips_dir = tempfile.mkdtemp()
-        print "Creating ZIP archives in: %s" % zips_dir
+        print("Creating ZIP archives in: %s" % zips_dir)
         if os.path.isdir(repo):
-            print "Processing repository directory: %s" % repo
+            print("Processing repository directory: %s" % repo)
 
             # Walk the directory tree, and create a zip.
             zip_paths = archive.create_partitioned_zips_from_dir(repo, zips_dir)
         else:
-            print "Processing repository zip archive: %s" % repo
+            print("Processing repository zip archive: %s" % repo)
 
             # Open the zip, walk the entries and normalize the structure to clean zip (if necessary)
             zip_paths = archive.create_partitioned_zips_from_zip(repo, zips_dir)
@@ -112,7 +114,7 @@ def rollback(staging_repo_name, environment, debug=False):
     session = Session(nexus_config, debug=debug)
 
     try:
-        print "Dropping repository %s" % staging_repo_name
+        print("Dropping repository %s" % staging_repo_name)
         if not staging.drop_staging_repo(session, staging_repo_name):
             sys.exit(1)
     finally:

@@ -1,4 +1,6 @@
-from base import (TEST_INPUT_DIR, NexupBaseTest)
+from __future__ import print_function
+
+from .base import (TEST_INPUT_DIR, NexupBaseTest)
 import rcm_nexus
 import responses
 import os
@@ -13,7 +15,7 @@ class TestRepo(NexupBaseTest):
 		conf = self.create_and_load_conf()
 		key='central'
 		path = rcm_nexus.repo.COMPRESSED_CONTENT_PATH.format(key=key, delete='?delete=true')
-		# print "\n\n\n\nPOST: %s%s\n\n\n\n" % (conf.url, path)
+		# print("\n\n\n\nPOST: %s%s\n\n\n\n" % (conf.url, path))
 
 		responses.add(responses.POST, conf.url + path, match_querystring=True, status=201)
 
@@ -34,7 +36,7 @@ class TestRepo(NexupBaseTest):
 		conf = self.create_and_load_conf()
 		key='central'
 		path = rcm_nexus.repo.COMPRESSED_CONTENT_PATH.format(key=key, delete='')
-		# print "\n\n\n\nPOST: %s%s\n\n\n\n" % (conf.url, path)
+		# print("\n\n\n\nPOST: %s%s\n\n\n\n" % (conf.url, path))
 
 		responses.add(responses.POST, conf.url + path, status=201)
 
@@ -81,7 +83,7 @@ class TestRepo(NexupBaseTest):
 		path = rcm_nexus.repo.REPOS_PATH
 
 		def callbk(req):
-			print "RECV body: '%s'" % req.body
+			print("RECV body: '%s'" % req.body)
 			return (201,req.headers,req.body)
 
 		responses.add_callback(responses.POST, conf.url + path, callback=callbk)
@@ -99,7 +101,7 @@ class TestRepo(NexupBaseTest):
 		central_path = rcm_nexus.repo.NAMED_REPO_PATH.format(key=key)
 
 		def callbk(req):
-			print "RECV body: '%s'" % req.body
+			print("RECV body: '%s'" % req.body)
 			return (200,req.headers,req.body)
 
 		responses.add_callback(responses.PUT, conf.url + central_path, callback=callbk)
@@ -215,7 +217,7 @@ class TestRepo(NexupBaseTest):
 		body_lines = body.split('\n')
 		rendered_lines = repo.render().split('\n')
 		for i in range(0,len(body_lines)):
-			print "Searching: %s" % rendered_lines[i]
+			print("Searching: %s" % rendered_lines[i])
 			self.assertEqual(rendered_lines[i] in body_lines, True)
 
 
@@ -233,7 +235,7 @@ class TestRepo(NexupBaseTest):
 		sess = rcm_nexus.session.Session(conf)
 		repos = rcm_nexus.repo.load_all(sess)
 
-		print "Loaded all repositories: %s" % repos
+		print("Loaded all repositories: %s" % repos)
 		self.assertEqual(len(repos), 6)
 		self.assertEqual(len(responses.calls), 1)
 

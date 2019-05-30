@@ -1,5 +1,6 @@
+from __future__ import print_function
 
-from base import NexupBaseTest
+from .base import NexupBaseTest
 import rcm_nexus
 import responses
 import os
@@ -42,7 +43,7 @@ class TestSessionExists(NexupBaseTest):
 			self.assertEqual(sess.exists(path), False)
 			self.fail('should have failed with exception on 500 response')
 		except:
-			print "Caught expected Exception."
+			print("Caught expected Exception.")
 		finally:
 			self.assertEqual(len(responses.calls), 1)
 
@@ -57,7 +58,7 @@ class TestSessionExists(NexupBaseTest):
 		try:
 			self.assertEqual(sess.exists(path, fail=False), False)
 		except:
-			print traceback.format_exc()
+			print(traceback.format_exc())
 			self.fail('should NOT have raised exception on 500 response')
 		finally:
 			self.assertEqual(len(responses.calls), 1)

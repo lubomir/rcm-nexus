@@ -12,6 +12,8 @@
 # Authors:
 #    John Casey (jcasey@redhat.com)
 
+from __future__ import print_function
+
 from lxml import (objectify,etree)
 from rcm_nexus.session import Enum
 import os
@@ -35,7 +37,7 @@ def push_zip(session, repo_key, zip_file, delete_first=False):
             
         url = COMPRESSED_CONTENT_PATH.format(key=repo_key, delete=delete_param)
         if session.debug is True:
-            print "POSTing: %s" % url
+            print("POSTing: %s" % url)
         session.post(url, f, expect_status=201)
 
 def repo_exists(session, repo_key):
@@ -63,13 +65,13 @@ def load_all(session, name_pattern=None):
         name = child.xpath('name/text()')
         if len(name) < 1:
             if session.debug is True:
-                print "Discarding nameless repository."
+                print("Discarding nameless repository.")
             continue
         else:
             name = name[0]
         
         if session.debug is True:
-            print "Checking if '%s' matches: '%s'" % (name_pattern, name)
+            print("Checking if '%s' matches: '%s'" % (name_pattern, name))
         
         match = None
         if name_re is not None:
@@ -79,7 +81,7 @@ def load_all(session, name_pattern=None):
             rid=child.xpath('id/text()')
             if len(rid) < 1:
                 if session.debug is True:
-                    print "Discarding: %s (no id element)" % name
+                    print("Discarding: %s (no id element)" % name)
                 continue
             else:
                 rid = rid[0]
@@ -94,7 +96,7 @@ def load_all(session, name_pattern=None):
             repos.append(Repository(doc))
             
             if session.debug is True:
-                print "+ %s" % name
+                print("+ %s" % name)
     
     return repos
 #    return Repository(doc.data.id, doc.data.name)._set_xml_obj(doc)
@@ -231,12 +233,12 @@ class Repository(object):
     
     def set(self, path, value=None):
         element = self.data
-        print path.split('/')
+        print(path.split('/'))
         for part in path.split('/'):
-            print "Creating: %s" % part
+            print("Creating: %s" % part)
             if len(part) > 0:
                 element = etree.SubElement(element, part)
-                print "New element: %s" % element.tag
+                print("New element: %s" % element.tag)
         
         if element.tag == self.data.tag:
             raise Exception( "You must specify at least one sub-element!")
@@ -249,7 +251,7 @@ class Repository(object):
     def render(self, pretty_print=True):
         objectify.deannotate(self.xml, xsi_nil=True)
         etree.cleanup_namespaces(self.xml)
-        return etree.tostring(self.xml, pretty_print=pretty_print)
+        return etree.tostring(self.xml, pretty_print=pretty_print, encoding="unicode")
     
     def content_uri(self):
         if self.xml is not None:
@@ -279,18 +281,18 @@ class Repository(object):
         xml = self.render()
         if hasattr(self, '_backup_xml') and xml == self._backup_xml:
             if session.debug:
-                print "No changes to repository: %s. Skipping save." % self.data.id
+                print("No changes to repository: %s. Skipping save." % self.data.id)
             return self
         
         if self.new:
             if session.debug:
-                print "Saving to: %s\n\n%s\n\n" % (REPOS_PATH, xml)
+                print("Saving to: %s\n\n%s\n\n" % (REPOS_PATH, xml))
                 
             _response, xml = session.post(REPOS_PATH, self.render())
         else:
             path = NAMED_REPO_PATH.format(key=self.data.id)
             if session.debug:
-                print "Saving to: %s\n\n%s\n\n" % (path, xml)
+                print("Saving to: %s\n\n%s\n\n" % (path, xml))
                 
             _response, xml = session.put(path, self.render())
         

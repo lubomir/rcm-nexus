@@ -53,7 +53,8 @@ setup(
       "requests",
       "lxml",
       "click",
-      "PyYAML"
+      "PyYAML",
+      "six",
     ],
     tests_require=test_deps,
     extras_require=extras,

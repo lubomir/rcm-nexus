@@ -1,7 +1,7 @@
 # coding: utf-8
 from __future__ import unicode_literals
 
-from base import NexupBaseTest
+from .base import NexupBaseTest
 from unittest import TestCase
 from rcm_nexus import config
 import os

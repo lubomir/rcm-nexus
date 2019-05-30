@@ -1,4 +1,4 @@
-from command import push, rollback, init
+from .command import push, rollback, init
 
 __all__ = [
     'init',

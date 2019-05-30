@@ -1,4 +1,4 @@
-from base import (TEST_INPUT_DIR, NexupBaseTest)
+from .base import (TEST_INPUT_DIR, NexupBaseTest)
 from rcm_nexus import (staging, config, session)
 import responses
 import os

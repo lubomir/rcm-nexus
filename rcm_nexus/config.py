@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 import yaml
 import getpass
 import subprocess
@@ -67,7 +69,7 @@ class NexusConfig(object):
 
 
 def die(error_msg):
-    print error_msg
+    print(error_msg)
     sys.exit(1)
 
 def load(environment, cli_overrides=None, debug=False):
@@ -75,7 +77,7 @@ def load(environment, cli_overrides=None, debug=False):
     data = None
 
     if debug is True:
-        print "Loading main config: %s" % config_path
+        print("Loading main config: %s" % config_path)
     with open(config_path) as f:
         dataMap = yaml.safe_load(f)
         data=dataMap.get(environment)
@@ -89,15 +91,15 @@ def load(environment, cli_overrides=None, debug=False):
     profiles = os.path.join(os.path.dirname(config_path), "%s.yaml" % environment)
     
     if debug is True:
-        print "Loading staging profiles: %s" % profiles
+        print("Loading staging profiles: %s" % profiles)
     profile_data = {}
     if os.path.exists(profiles):
         with open(profiles) as f:
             profile_data = yaml.safe_load(f)
         if debug is True:
-            print "Loaded %d product profiles for: %s" % (len(profile_data.keys()), environment)
+            print("Loaded %d product profiles for: %s" % (len(profile_data.keys()), environment))
     elif debug is True:
-        print "WARNING: No profile mappings found in: %s" % profiles
+        print("WARNING: No profile mappings found in: %s" % profiles)
 
     return NexusConfig(environment, data, profile_data)
 

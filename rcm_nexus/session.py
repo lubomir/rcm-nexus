@@ -13,12 +13,17 @@
 # Authors:
 #    John Casey (jcasey@redhat.com)
 
+from __future__ import print_function
+
 import os
 import sys
 import requests
 import shutil
 import getpass
 import base64
+
+import six
+
 
 class Enum(object):
     def __init__(self, **kwargs):
@@ -28,7 +33,7 @@ class Enum(object):
             setattr(self, key, val)
             self._all_values.append(val)
             
-            if not isinstance(val, basestring):
+            if not isinstance(val, six.string_types):
                 strkey = key + '_str'
                 strval = str(val)
                 setattr(self, strkey, strval)
@@ -96,7 +101,7 @@ class Session(object):
             if fail:
                 raise Exception(msg)
             else:
-                print msg
+                print(msg)
             return False
         
     def head(self, path, headers=None, expect_status=200, ignore_404=False, fail=True):
@@ -107,12 +112,12 @@ class Session(object):
         h = self._combine_headers(headers, h)
         
         if self.debug:
-            print "HEAD %s\n%s" % (uri,h)
+            print("HEAD %s\n%s" % (uri,h))
             
         response = requests.head(uri, headers=h, verify=self.config.ssl_verify, auth=self.auth)
         
         if self.debug:
-            print "Response data:\n %s\n" % response
+            print("Response data:\n %s\n" % response)
             
         if response.status_code == expect_status:
             return (response,response.text)
@@ -123,7 +128,7 @@ class Session(object):
             if fail:
                 raise Exception(msg)
             else:
-                print msg
+                print(msg)
             return (response,None)
         
     def get(self, path, headers=None, expect_status=200, ignore_404=False, fail=True):
@@ -137,12 +142,12 @@ class Session(object):
         
         uri = self.config.url + path
         if self.debug:
-            print "GET %s\n%s" % (uri,h)
+            print("GET %s\n%s" % (uri,h))
             
         response = requests.get(uri, headers=h, verify=self.config.ssl_verify, auth=self.auth)
         
         if self.debug:
-            print "Response data:\n %s\n\nBody:\n%s" % (response, response.text)
+            print("Response data:\n %s\n\nBody:\n%s" % (response, response.text))
             
         if response.status_code == expect_status:
             return (response,response.text)
@@ -153,7 +158,7 @@ class Session(object):
             if fail:
                 raise Exception(msg)
             else:
-                print msg
+                print(msg)
             return (response,None)
                 
     def delete(self, path, headers=None, expect_status=204, ignore_404=False, fail=True):
@@ -168,12 +173,12 @@ class Session(object):
         h = self._combine_headers(headers, h)
         
         if self.debug:
-            print "DELETE %s\n%s" % (uri,h)
+            print("DELETE %s\n%s" % (uri,h))
             
         response = requests.delete(uri, headers=h, verify=self.config.ssl_verify, auth=self.auth)
         
         if self.debug:
-            print "Response data:\n %s\n" % response
+            print("Response data:\n %s\n" % response)
             
         if response.status_code == expect_status:
             return (response,response.text)
@@ -184,7 +189,7 @@ class Session(object):
             if fail:
                 raise Exception(msg)
             else:
-                print msg
+                print(msg)
             return (response,None)
                 
     def post(self, path, body, headers=None, expect_status=201, ignore_404=False, fail=True):
@@ -198,13 +203,13 @@ class Session(object):
         
         uri = self.config.url + path
         if self.debug:
-            print "POST %s\n%s" % (uri,h)
-            print "Request body:\n", body
+            print("POST %s\n%s" % (uri,h))
+            print("Request body:\n", body)
             
         response = requests.post(uri, data=body, headers=h, verify=self.config.ssl_verify, auth=self.auth)
         
         if self.debug:
-            print "Response data:\n %s\n\nBody:\n%s\n" % (response, response.text)
+            print("Response data:\n %s\n\nBody:\n%s\n" % (response, response.text))
             
         if response.status_code == expect_status:
             return (response,response.text)
@@ -215,7 +220,7 @@ class Session(object):
             if fail:
                 raise Exception(msg)
             else:
-                print msg
+                print(msg)
             return (response,None)
                 
     def put(self, path, body, headers=None, expect_status=200, ignore_404=False, fail=True):
@@ -229,13 +234,13 @@ class Session(object):
         
         uri = self.config.url + path
         if self.debug:
-            print "PUT %s\n%s" % (uri,h)
-            print "Request body:\n", body
+            print("PUT %s\n%s" % (uri,h))
+            print("Request body:\n", body)
             
         response = requests.put(uri, data=body, headers=h, verify=self.config.ssl_verify, auth=self.auth)
         
         if self.debug:
-            print "Response data:\n %s\n\nBody:\n%s\n" % (response, response.text)
+            print("Response data:\n %s\n\nBody:\n%s\n" % (response, response.text))
             
         if response.status_code == expect_status:
             return (response,response.text)
@@ -246,6 +251,6 @@ class Session(object):
             if fail:
                 raise Exception(msg)
             else:
-                print msg
+                print(msg)
             return (response,None)
         
