@@ -1,12 +1,16 @@
 from __future__ import print_function
 
-import yaml
 import getpass
 import subprocess
 import os
+import shutil
 import sys
+import tempfile
 
-RCM_NEXUS_YAML = 'RCM_NEXUS_YAML'
+from six.moves import configparser
+
+RCM_NEXUS_CONFIG = 'RCM_NEXUS_CONFIG'
+SECTION = "general"
 
 URL = 'url'
 USERNAME = 'username'
@@ -14,24 +18,32 @@ PASSWORD = 'password'
 SSL_VERIFY = 'ssl-verify'
 PREEMPTIVE_AUTH = 'preemptive-auth'
 INTERACTIVE = 'interactive'
+CONFIG_REPO = "config_repo"
 GA_PROMOTE_PROFILE = "ga-promote-profile"
 EA_PROMOTE_PROFILE = "ea-promote-profile"
 
-GA_PROFILE = 'ga'
-EA_PROFILE = 'ea'
+GA_STAGING_PROFILE = 'ga'
+EA_STAGING_PROFILE = 'ea'
+
+DEFAULTS = {
+    SSL_VERIFY: "yes",
+    PREEMPTIVE_AUTH: "no",
+    USERNAME: getpass.getuser(),
+    PASSWORD: "@oracle:ask_password",
+    INTERACTIVE: "yes",
+}
+
 
 class NexusConfig(object):
     def __init__(self, name, data, profile_data):
         self.name = name
-        self.url = data[URL]
-        self.ssl_verify = data.get(SSL_VERIFY, True)
-        self.preemptive_auth = data.get(PREEMPTIVE_AUTH, False)
-        self.username = data.get(USERNAME, getpass.getuser())
-        self.password = data.get(PASSWORD, "@oracle:ask_password")
-        self.interactive = data.get(INTERACTIVE, True)
+        self.url = data.get(name, URL)
+        self.ssl_verify = data.getboolean(name, SSL_VERIFY)
+        self.preemptive_auth = data.getboolean(name, PREEMPTIVE_AUTH)
+        self.username = data.get(name, USERNAME)
+        self.password = data.get(name, PASSWORD)
+        self.interactive = data.getboolean(name, INTERACTIVE)
         self.profile_map = profile_data
-        self.ga_promote_profile = data.get(GA_PROMOTE_PROFILE)
-        self.ea_promote_profile = data.get(EA_PROMOTE_PROFILE)
 
     def get_password(self):
         if self.password and self.password.startswith("@oracle:"):
@@ -43,17 +55,18 @@ class NexusConfig(object):
         if profiles is None:
             raise Exception( "No staging profiles found for: '%s' in environment: %s" % (product, self.name) )
 
-        quality_level = GA_PROFILE if is_ga is True else EA_PROFILE
+        quality_level = GA_STAGING_PROFILE if is_ga is True else EA_STAGING_PROFILE
+        print(profiles)
         profile_id = profiles.get(quality_level)
         if profile_id is None:
-            raise Exception( 
+            raise Exception(
                 "ProfileID not configured for quality level: %s in 'profile-maps' of configuration: %s for the product: '%s' (case-sensitive)" % 
-                (quality_level, config.name, product) )
+                (quality_level, self.name, product))
 
         return profile_id
 
-    def get_promote_profile_id(self, is_ga):
-        return self.ga_promote_profile if is_ga else self.ea_promote_profile
+    def get_promote_profile_id(self, product, is_ga):
+        return self.profile_map(product)[GA_PROMOTE_PROFILE if is_ga else EA_PROMOTE_PROFILE]
 
     def __str__(self):
         return """RCMNexusConfig [
@@ -62,8 +75,8 @@ class NexusConfig(object):
     use-preemptive-auth: %(preemptive_auth)s
     username: %(username)s
     interactive: %(interactive)s
-]""" % self
-    
+]""" % self.__dict__
+
     def __repr__(self):
         return self.__str__()
 
@@ -72,84 +85,69 @@ def die(error_msg):
     print(error_msg)
     sys.exit(1)
 
-def load(environment, cli_overrides=None, debug=False):
-    config_path = get_config_path()
-    data = None
 
-    if debug is True:
-        print("Loading main config: %s" % config_path)
+def load(environment, debug=False):
+    config_paths = list(reversed(get_config_path()))
+    parser = configparser.RawConfigParser(DEFAULTS)
+    if not parser.read(config_paths):
+        die("Failed to load config file from any path:\n%s" % "\n".join(config_paths))
+
+    profile_data = read_config(parser.get(SECTION, CONFIG_REPO))
+
+    return NexusConfig(environment, parser, profile_data)
+
+
+def read_config(repo_url):
+    """Read configuration from given location.
+    If needed, a Git repo will be cloned and the file read from there.
+    """
+    if "://" in repo_url:
+        return _clone_config_repo(repo_url)
+    return _read_config(repo_url)
+
+
+def _clone_config_repo(repo_url):
+    """Clone a git repository and read rcm-nexus.conf from there."""
+    tempdir = tempfile.mkdtemp(prefix="rcm-nexus-config-")
+    clone_dir = os.path.join(tempdir, "clone")
     try:
-        with open(config_path) as f:
-            dataMap = yaml.safe_load(f)
-            data = dataMap.get(environment)
-    except IOError as exc:
-        die("Failed to load config file: %s" % exc)
+        subprocess.check_call(
+            ["git", "clone", "--depth=1", repo_url, clone_dir],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+        return _read_config(os.path.join(clone_dir, "rcm-nexus.conf"))
+    finally:
+        shutil.rmtree(tempdir)
 
-    if data is None:
-        die("Missing configuration for environment: %s (config file: %s)" % (environment, config_path))
 
-    if cli_overrides is not None:
-        data.update(cli_overrides)
-
-    profiles = os.path.join(os.path.dirname(config_path), "%s.yaml" % environment)
-    
-    if debug is True:
-        print("Loading staging profiles: %s" % profiles)
-    profile_data = {}
-    if os.path.exists(profiles):
-        try:
-            with open(profiles) as f:
-                profile_data = yaml.safe_load(f)
-        except IOError as exc:
-            die("Failed to load config file: %s" % exc)
-        if debug is True:
-            print("Loaded %d product profiles for: %s" % (len(profile_data.keys()), environment))
-    elif debug is True:
-        print("WARNING: No profile mappings found in: %s" % profiles)
-
-    return NexusConfig(environment, data, profile_data)
+def _read_config(path):
+    result = {}
+    parser = configparser.RawConfigParser()
+    with open(path) as f:
+        parser.readfp(f)
+    for product in parser.sections():
+        result[product] = dict(parser.items(product))
+    return result
 
 
 def init_config():
-    conf_path = get_config_path()
+    conf_path = get_config_path()[0]
     if os.path.exists(conf_path):
         die("%s already exists!" % conf_path)
 
+    parser = configparser.RawConfigParser()
     conf_dir = os.path.dirname(conf_path)
     if not os.path.isdir(conf_dir):
         os.makedirs(conf_dir)
-    
-    conf = {
-        'prod':{
-            URL: 'http://repository.prod.corp.com/nexus',
-            EA_PROMOTE_PROFILE: "123",
-            GA_PROMOTE_PROFILE: "456",
-        },
-        'stage':{
-            URL: 'http://repository.stage.corp.com/nexus',
-            EA_PROMOTE_PROFILE: "321",
-            GA_PROMOTE_PROFILE: "654",
-        }
-    }
-
-    profile_data = {
-        'MYPRODUCT': {
-            GA_PROFILE: '0123456789',
-            EA_PROFILE: '9876543210'
-        }
-    }
-
-    with open(conf_path, 'w') as f:
-        yml = yaml.safe_dump(conf)
-        f.write("# For more information see: https://mojo.redhat.com/docs/DOC-1132234\n\n")
-        f.write(yml)
-
-    for e in conf.keys():
-        profile_path = os.path.join(conf_dir, "%s.yaml" % e)
-        with open(profile_path, 'w') as f:
-            yml = yaml.safe_dump(profile_data)
-            f.write("# For more information see: https://mojo.redhat.com/docs/DOC-1132234\n\n")
-            f.write(yml)
+    parser.add_section(SECTION)
+    parser.set(SECTION, "; username", "jdoe")
+    parser.set(SECTION, "; password",  "@oracle:ask_password")
+    parser.set(SECTION, "; config_repo", "git://example.com")
+    with open(conf_path, "w") as f:
+        parser.write(f)
+        print("; For more information see: https://mojo.redhat.com/docs/DOC-1132234", file=f)
+        print("; The config_repo options can be defined in system wide config file", file=f)
 
     return conf_path
 
@@ -200,27 +198,24 @@ def get_config_path():
     """
     Determine the path to the config file. This will return, in this order of
     precedence:
-    - the value of $RCM_NEXUS_YAML if set
-    - $XDG_CONFIG_HOME/rcm-nexus/config.yaml if exists
-    - ~/.rcm-nexus/config.yaml if exists
-    - <dir>/rcm-nexus/config.yaml if exists, for dir in $XDG_CONFIG_DIRS
-    - $XDG_CONFIG_HOME/rcm-nexus/config.yaml otherwise
+    - the value of $RCM_NEXUS_CONFIG if set
+    - $XDG_CONFIG_HOME/rcm-nexus/config.conf if exists
+    - ~/.rcm-nexus/config.conf if exists
+    - <dir>/rcm-nexus/config.conf if exists, for dir in $XDG_CONFIG_DIRS
+    - $XDG_CONFIG_HOME/rcm-nexus/config.conf otherwise
     """
-    if os.environ.get(RCM_NEXUS_YAML):
-        return os.environ[RCM_NEXUS_YAML]
+    if RCM_NEXUS_CONFIG in os.environ:
+        return [os.environ[RCM_NEXUS_CONFIG]]
     xdg_config_home = (
         os.environ.get('XDG_CONFIG_HOME') or os.path.expanduser('~/.config'))
     xdg_config_dirs = (
         (os.environ.get('XDG_CONFIG_DIRS') or '/etc/xdg').split(':'))
     paths = [
-        os.path.join(xdg_config_home, 'rcm-nexus', 'config.yaml'),
-        os.path.expanduser("~/.rcm-nexus/config.yaml")]
+        os.path.join(xdg_config_home, 'rcm-nexus.conf'),
+        os.path.expanduser("~/.rcm-nexus.conf")]
     paths += [
-        os.path.join(d, 'rcm-nexus', 'config.yaml') for d in xdg_config_dirs]
-    for path in paths:
-        if os.path.exists(path):
-            return path
-    return paths[0]
+        os.path.join(d, 'rcm-nexus.conf') for d in xdg_config_dirs]
+    return paths
 #
 # END Bugwarrior code.
 ###############################################################################

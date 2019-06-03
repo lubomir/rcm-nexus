@@ -1,10 +1,7 @@
 from .base import (TEST_INPUT_DIR, NexupBaseTest)
 from rcm_nexus import (staging, config, session)
 import responses
-import os
-import yaml
-import traceback
-import tempfile
+
 
 class TestGroup(NexupBaseTest):
 
@@ -13,11 +10,9 @@ class TestGroup(NexupBaseTest):
         ga_profile = '0123456789'
 
         profile_map = {
-            'test':{
-                'eap': {
-                    config.GA_PROFILE: str(ga_profile),
-                    config.EA_PROFILE: '9876543210'
-                }
+            'eap': {
+                config.GA_STAGING_PROFILE: str(ga_profile),
+                config.EA_STAGING_PROFILE: '9876543210'
             }
         }
 
@@ -49,11 +44,9 @@ class TestGroup(NexupBaseTest):
         ga_profile = '0123456789'
 
         profile_map = {
-            'test':{
-                'eap': {
-                    config.GA_PROFILE: str(ga_profile),
-                    config.EA_PROFILE: '9876543210'
-                }
+            'eap': {
+                config.GA_STAGING_PROFILE: str(ga_profile),
+                config.EA_STAGING_PROFILE: '9876543210'
             }
         }
 

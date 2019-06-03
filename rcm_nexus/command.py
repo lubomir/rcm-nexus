@@ -26,10 +26,9 @@ def init():
 
     Next steps:
 
-    - Modify configuration to include each Nexus environment you intend to manage.
+    - Set url to git repository with product configuration.
     - Fine tune each environment's configuration (username, ssl-verify, etc.).
     - Setup passwords (`pass` is a nice tool for this) to match the configured password keys.
-    - Add Nexus staging profiles for each product you intend to manage via Nexus.
     
     For more information on using rcm-nexus (nexus-push, nexus-rollback), see:
 
@@ -38,7 +37,7 @@ def init():
 
 @click.command()
 @click.argument('repo', type=click.Path(exists=True))
-@click.option('--environment', '-e', help='The target Nexus environment (from ~/.config/rcm-nexus/config.yaml)')
+@click.option('--environment', '-e', help='The target Nexus environment (from config file)')
 @click.option('--product', '-p', help='The product key, used to lookup profileId from the configuration')
 @click.option('--version', '-v', help='The product version, used in repository definition metadata')
 @click.option('--ga', '-g', is_flag=True, default=False, help='Push content to the GA group (as opposed to earlyaccess)')
@@ -88,7 +87,7 @@ def push(repo, environment, product, version, ga=False, debug=False):
             sys.exit(1)
 
         print("Promoting repo")
-        promote_profile = nexus_config.get_promote_profile_id(ga)
+        promote_profile = nexus_config.get_promote_profile_id(product, ga)
         staging.promote(session, promote_profile, staging_repo_id, product, version, ga)
 
         if staging.verify_action(session, staging_repo_id, "promote"):
@@ -102,7 +101,7 @@ def push(repo, environment, product, version, ga=False, debug=False):
 
 @click.command()
 @click.argument('staging_repo_name')
-@click.option('--environment', '-e', help='The target Nexus environment (from ~/.config/rcm-nexus/config.yaml)')
+@click.option('--environment', '-e', help='The target Nexus environment (from config file)')
 @click.option('--debug', '-D', is_flag=True, default=False)
 def rollback(staging_repo_name, environment, debug=False):
     """Drop given staging repository.

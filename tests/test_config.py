@@ -4,16 +4,15 @@ from __future__ import unicode_literals
 from .base import NexupBaseTest
 from unittest import TestCase
 from rcm_nexus import config
-import os
-import yaml
+
+from six.moves import configparser
+
 
 class TestConfigLoad(NexupBaseTest):
 
     def test_init(self):
-        config_file = config.init_config()
-        conf = config.load('prod')
-        self.assertEqual(conf.get_profile_id('MYPRODUCT', is_ga=True) is None, False)
-        self.assertEqual(conf.get_profile_id('MYPRODUCT', is_ga=False) is None, False)
+        config.init_config()
+        self.assertRaises(configparser.NoOptionError, config.load, 'prod')
 
     def test_minimal_from_default(self):
         url='http://nowhere.com/nexus'
@@ -36,11 +35,9 @@ class TestConfigLoad(NexupBaseTest):
         }
 
         profile_map = {
-            'test':{
-                'eap': {
-                    config.GA_PROFILE: str(ga_profile),
-                    config.EA_PROFILE: '9876543210'
-                }
+            'eap': {
+                config.GA_STAGING_PROFILE: str(ga_profile),
+                config.EA_STAGING_PROFILE: '9876543210'
             }
         }
 
@@ -60,11 +57,9 @@ class TestConfigLoad(NexupBaseTest):
         }
 
         profile_map = {
-            'test':{
-                'eap': {
-                    config.GA_PROFILE: '9876543210',
-                    config.EA_PROFILE: str(ea_profile)
-                }
+            'eap': {
+                config.GA_STAGING_PROFILE: '9876543210',
+                config.EA_STAGING_PROFILE: str(ea_profile)
             }
         }
 

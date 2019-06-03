@@ -1,15 +1,15 @@
 from __future__ import print_function
 
 import rcm_nexus
-import traceback
 import os
 import tempfile
 import shutil
 import unittest
-import yaml
 from rcm_nexus import config
 import zipfile
-from random import randint
+import random
+
+from six.moves import configparser
 
 
 WORDS = ['/usr/share/dict/words', '/usr/dict/words']
@@ -34,18 +34,11 @@ class NexupBaseTest(unittest.TestCase):
         self.old_environ = os.environ.copy()
         self.tempdir = tempfile.mkdtemp(prefix='rcm-nexus')
 
-        # Create temporary config files.
-        self.taskrc = os.path.join(self.tempdir, '.taskrc')
-        self.lists_path = os.path.join(self.tempdir, 'lists')
-        os.mkdir(self.lists_path)
-        with open(self.taskrc, 'w+') as fout:
-            fout.write('data.location=%s\n' % self.lists_path)
-
         # Configure environment.
         os.environ['HOME'] = self.tempdir
-        os.environ.pop(config.RCM_NEXUS_YAML, None)
+        os.environ.pop(config.RCM_NEXUS_CONFIG, None)
         os.environ.pop('XDG_CONFIG_HOME', None)
-        os.environ.pop('XDG_CONFIG_DIRS', None)
+        os.environ['XDG_CONFIG_DIRS'] = os.path.join(self.tempdir, "xdg")
 
     def tearDown(self):
         shutil.rmtree(self.tempdir, ignore_errors=True)
@@ -62,10 +55,7 @@ class NexupBaseTest(unittest.TestCase):
         zf = zipfile.ZipFile(src_zip, mode='w')
         for path in paths:
             if content is None:
-                content = ''
-                for i in range(randint(1,10)):
-                    content += self.words[randint(1,len(self.words))]
-                    content += ' '
+                content = " ".join(random.sample(self.words, 10))
             zf.writestr(path, content)
         zf.close()
 
@@ -75,9 +65,7 @@ class NexupBaseTest(unittest.TestCase):
             os.makedirs(os.path.dirname(path))
             with open(path, 'w') as f:
                 if content is None:
-                    for i in range(randint(1,10)):
-                        f.write(self.words[randint(1,len(self.words))])
-                        f.write(' ')
+                    f.write(" ".join(random.sample(self.words, 10)))
                 else:
                     f.write(content)
 
@@ -85,32 +73,34 @@ class NexupBaseTest(unittest.TestCase):
         """
         Create an empty file in the temporary directory, return the full path.
         """
-        path = '.config/rcm-nexus/config.yaml'
+        path = ".config/rcm-nexus.conf"
         fpath = os.path.join(self.tempdir, path)
+        fdir = os.path.dirname(fpath)
+        profile_mappings = os.path.join(fdir, "environments.conf")
         if not os.path.exists(os.path.dirname(fpath)):
             os.makedirs(os.path.dirname(fpath))
 
+        parser = configparser.RawConfigParser()
+        parser.add_section(config.SECTION)
+        parser.set(config.SECTION, config.CONFIG_REPO, profile_mappings)
+        for env in conf:
+            parser.add_section(env)
+            for key, value in conf[env].items():
+                parser.set(env, key, value)
+
         with open(fpath, 'w') as f:
-            yml = yaml.safe_dump(conf)
-            #print("""Writing config to: %s)
-            #
-            #%s
-            #""" % (fpath, yml)
+            parser.write(f)
 
-            f.write(yml)
-
-        fdir = os.path.dirname(fpath)
-        for e in profile_data.keys():
-            profile_mappings = os.path.join(fdir, "%s.yaml" % e)
-            print("Writing profile-mapping YAML: %s" % profile_mappings)
-            with open(profile_mappings, 'w') as f:
-                yml = yaml.safe_dump(profile_data[e])
-                f.write(yml)
+        parser = configparser.RawConfigParser()
+        for e in profile_data:
+            parser.add_section(e)
+            for key, value in profile_data[e].items():
+                parser.set(e, key, value)
+        with open(profile_mappings, "w") as f:
+            parser.write(f)
 
         return fpath
 
     def create_and_load_conf(self, conf=TEST_CONFIG, profile_data={}):
         fpath = self.write_config(conf, profile_data)
         return rcm_nexus.config.load('test')
-
-
