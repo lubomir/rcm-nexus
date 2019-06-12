@@ -4,9 +4,8 @@ from .base import (TEST_INPUT_DIR, NexupBaseTest)
 import rcm_nexus
 import responses
 import os
-import yaml
-import traceback
 import tempfile
+
 
 class TestRepo(NexupBaseTest):
 
