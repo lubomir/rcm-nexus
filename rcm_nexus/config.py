@@ -56,7 +56,6 @@ class NexusConfig(object):
             raise Exception( "No staging profiles found for: '%s' in environment: %s" % (product, self.name) )
 
         quality_level = GA_STAGING_PROFILE if is_ga is True else EA_STAGING_PROFILE
-        print(profiles)
         profile_id = profiles.get(quality_level)
         if profile_id is None:
             raise Exception(
@@ -66,7 +65,7 @@ class NexusConfig(object):
         return profile_id
 
     def get_promote_profile_id(self, product, is_ga):
-        return self.profile_map(product)[GA_PROMOTE_PROFILE if is_ga else EA_PROMOTE_PROFILE]
+        return self.profile_map[product][GA_PROMOTE_PROFILE if is_ga else EA_PROMOTE_PROFILE]
 
     def __str__(self):
         return """RCMNexusConfig [
