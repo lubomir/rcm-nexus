@@ -72,7 +72,7 @@ class Zipper(object):
         if '/' in filename:
             filename_parts = filename.split('/')
 
-            while filename_parts and "maven-repository" in filename_parts[0]:
+            while filename_parts and "maven-repository" in filename_parts[0] and len(filename_parts) > 1:
                 del filename_parts[0]
 
             filename = "/".join(filename_parts)
