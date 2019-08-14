@@ -88,21 +88,6 @@ class Session(object):
             result.update(headers)
             
         return result
-    
-    def exists(self, path, fail=True):
-        response,_content = self.head(path, ignore_404=True, fail=False)
-        
-        if response.status_code == 200:
-            return True
-        elif response.status_code == 404:
-            return False
-        else:
-            msg= "Existence check for '%s' failed: %s" % (path, response.status_code)
-            if fail:
-                raise Exception(msg)
-            else:
-                print(msg)
-            return False
         
     def head(self, path, headers=None, expect_status=200, ignore_404=False, fail=True):
         uri = self.config.url + path

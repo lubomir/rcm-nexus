@@ -52,18 +52,6 @@ class TestRepo(NexupBaseTest):
 		self.assertEqual(len(responses.calls), 1)
 
 	@responses.activate
-	def test_exists(self):
-		conf = self.create_and_load_conf()
-		key='central'
-		path = rcm_nexus.repo.NAMED_REPO_PATH.format(key=key)
-
-		responses.add(responses.HEAD, conf.url + path, status=200)
-
-		sess = rcm_nexus.session.Session(conf)
-		self.assertEqual(rcm_nexus.repo.repo_exists(sess, key), True)
-		self.assertEqual(len(responses.calls), 1)
-
-	@responses.activate
 	def test_delete(self):
 		conf = self.create_and_load_conf()
 		key='central'
