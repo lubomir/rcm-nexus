@@ -119,37 +119,6 @@ class Session(object):
                 print(msg)
             return (response,None)
                 
-    def delete(self, path, headers=None, expect_status=204, ignore_404=False, fail=True):
-        """Issue a DELETE request to the Nexus server, on the given path. Expect a response status of 204 (No Content), 
-           unless specified by expect_status. Fail if 404 response is given, unless ignore_404 is specified.
-           Fail any unexpected, non-404 response, unless fail is specified differently.
-           
-           Return response.
-        """
-        uri = self.config.url + path
-        h = {}
-        h = self._combine_headers(headers, h)
-        
-        if self.debug:
-            print("DELETE %s\n%s" % (uri,h))
-            
-        response = requests.delete(uri, headers=h, verify=self.config.ssl_verify, auth=self.auth)
-        
-        if self.debug:
-            print("Response data:\n %s\n" % response)
-            
-        if response.status_code == expect_status:
-            return (response,response.text)
-        elif ignore_404 and response.status_code == 404:
-            return (response,response.text)
-        else:
-            msg = "DELETE %s failed: %s" % (path, response.status_code)
-            if fail:
-                raise Exception(msg)
-            else:
-                print(msg)
-            return (response,None)
-                
     def post(self, path, body, headers=None, expect_status=201, ignore_404=False, fail=True):
         """Issue a POST request to the Nexus server, on the given path. Expect a response status of 201 (Created), 
            unless specified by expect_status. Fail if 404 response is given, unless ignore_404 is specified.

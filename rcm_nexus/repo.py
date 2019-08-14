@@ -103,12 +103,6 @@ def load_all(session, name_pattern=None):
 #    return Repository(doc.data.id, doc.data.name)._set_xml_obj(doc)
     
 
-def delete(session, key, ignore_missing=True):
-    """Delete the specified Nexus repository (by id). By default, ignore the failure if
-       no such repository exists (ignore_missing).
-    """
-    session.delete(NAMED_REPO_PATH.format(key=key), ignore_404=ignore_missing)
-
 class Repository(object):
     """Wrapper class around repository id (key), name, remote_url, and storage_base.
        Remote url is used to determine whether the repository type is 'remote' (proxy)
