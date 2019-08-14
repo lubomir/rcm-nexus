@@ -89,33 +89,6 @@ class Session(object):
             
         return result
         
-    def head(self, path, headers=None, expect_status=200, ignore_404=False, fail=True):
-        uri = self.config.url + path
-        
-#         h = {'User-Agent': Session.USER_AGENT}
-        h = {}
-        h = self._combine_headers(headers, h)
-        
-        if self.debug:
-            print("HEAD %s\n%s" % (uri,h))
-            
-        response = requests.head(uri, headers=h, verify=self.config.ssl_verify, auth=self.auth)
-        
-        if self.debug:
-            print("Response data:\n %s\n" % response)
-            
-        if response.status_code == expect_status:
-            return (response,response.text)
-        elif ignore_404 and response.status_code == 404:
-            return (response,response.text)
-        else:
-            msg= "HEAD %s failed: %s" % (path, response.status_code)
-            if fail:
-                raise Exception(msg)
-            else:
-                print(msg)
-            return (response,None)
-        
     def get(self, path, headers=None, expect_status=200, ignore_404=False, fail=True):
         """Issue a GET request to the Nexus server, on the given path. Expect a response status of 200, 
            unless specified by expect_status. Fail if 404 response is given, unless ignore_404 is specified.
