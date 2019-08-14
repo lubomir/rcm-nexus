@@ -1,6 +1,5 @@
 from __future__ import print_function
 
-import time
 from rcm_nexus.session import Session
 import rcm_nexus.config as config
 import rcm_nexus.repo as repos
@@ -9,6 +8,7 @@ import rcm_nexus.staging as staging
 import os.path
 import sys
 import click
+import requests
 import shutil
 import tempfile
 
@@ -91,6 +91,11 @@ def push(repo, environment, product, version, ga=False, debug=False):
 
         if staging.verify_action(session, staging_repo_id, "promote"):
             sys.exit(1)
+    except requests.exceptions.HTTPError as exc:
+        if debug:
+            raise
+        print("Network error: %s" % exc, file=sys.stderr)
+        sys.exit(1)
     finally:
         if session is not None:
             session.close()
@@ -115,6 +120,11 @@ def rollback(staging_repo_name, environment, debug=False):
         print("Dropping repository %s" % staging_repo_name)
         if not staging.drop_staging_repo(session, staging_repo_name):
             sys.exit(1)
+    except requests.exceptions.HTTPError as exc:
+        if debug:
+            raise
+        print("Network error: %s" % exc, file=sys.stderr)
+        sys.exit(1)
     finally:
         if session is not None:
             session.close()

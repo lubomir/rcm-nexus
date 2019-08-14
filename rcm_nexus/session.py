@@ -88,7 +88,30 @@ class Session(object):
             result.update(headers)
             
         return result
-        
+
+    def _handle_error(self, response, path, fail):
+        print(
+            "%s %s failed: %s"
+            % (response.request.method.upper(), path, response.status_code),
+            file=sys.stderr
+        )
+        if response.status_code == 401:
+            print(
+                "Incorrect credentials for user %s. Username can be changed by "
+                "setting USER env var, or in ~/.config/rcm-nexus.conf."
+                % self.auth.username,
+                file=sys.stderr,
+            )
+        if response.status_code == 403:
+            print(
+                "You don't have permissions to perform this action. Contact "
+                "maintainers of the Nexus instance you are trying to use.",
+                file=sys.stderr,
+            )
+        if fail:
+            response.raise_for_status()
+        return (response, None)
+
     def get(self, path, headers=None, expect_status=200, ignore_404=False, fail=True):
         """Issue a GET request to the Nexus server, on the given path. Expect a response status of 200, 
            unless specified by expect_status. Fail if 404 response is given, unless ignore_404 is specified.
@@ -112,12 +135,7 @@ class Session(object):
         elif ignore_404 and response.status_code == 404:
             return (response,response.text)
         else:
-            msg= "GET %s failed: %s" % (path, response.status_code)
-            if fail:
-                raise Exception(msg)
-            else:
-                print(msg)
-            return (response,None)
+            return self._handle_error(response, path, fail)
                 
     def post(self, path, body, headers=None, expect_status=201, ignore_404=False, fail=True):
         """Issue a POST request to the Nexus server, on the given path. Expect a response status of 201 (Created), 
@@ -143,12 +161,7 @@ class Session(object):
         elif ignore_404 and response.status_code == 404:
             return (response,response.text)
         else:
-            msg= "POST %s failed: %s" % (path, response.status_code)
-            if fail:
-                raise Exception(msg)
-            else:
-                print(msg)
-            return (response,None)
+            return self._handle_error(response, path, fail)
                 
     def put(self, path, body, headers=None, expect_status=200, ignore_404=False, fail=True):
         """Issue a PUT request to the Nexus server, on the given path. Expect a response status of 200, 
@@ -174,10 +187,4 @@ class Session(object):
         elif ignore_404 and response.status_code == 404:
             return (response,response.text)
         else:
-            msg= "POST %s failed: %s" % (path, response.status_code)
-            if fail:
-                raise Exception(msg)
-            else:
-                print(msg)
-            return (response,None)
-        
+            return self._handle_error(response, path, fail)
