@@ -110,5 +110,10 @@ def verify_action(session, repo_id, action_name):
                         if property["name"] == "failureMessage":
                             print("Error: %s" % property["value"])
                             has_errors = True
+            # We assume the action is present in the response at most once.
+            break
+    else:
+        # Action does not exist yet, try again.
+        return verify_action(session, repo_id, action_name)
 
     return has_errors
