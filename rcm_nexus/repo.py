@@ -29,16 +29,20 @@ REPOS_PATH = '/service/local/repositories'
 NAMED_REPO_PATH = REPOS_PATH + '/{key}'
 COMPRESSED_CONTENT_PATH = NAMED_REPO_PATH + "/content-compressed{delete}"
 
+
 def push_zip(session, repo_key, zip_file, delete_first=False):
     with open(zip_file, 'rb') as f:
         delete_param = ''
         if delete_first:
             delete_param = '?delete=true'
-            
+
         url = COMPRESSED_CONTENT_PATH.format(key=repo_key, delete=delete_param)
         if session.debug is True:
             print("POSTing: %s" % url)
-        session.post(url, f, expect_status=201)
+        session.post(
+            url, f, expect_status=201, headers={"Content-Type": "application/zip"}
+        )
+
 
 def repo_exists(session, repo_key):
     return session.exists( NAMED_REPO_PATH.format(key=repo_key) )
