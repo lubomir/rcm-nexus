@@ -52,10 +52,9 @@ def push(repo, environment, product, version, ga=False, debug=False):
     nexus_config = config.load(environment, debug=debug)
 
     session = Session(nexus_config, debug=debug)
-    
+    print("Pushing: %s content to: %s" % (repo.decode("utf-8"), environment))
+
     try:
-        print("Pushing: %s content to: %s" % (repo, environment))
-        
         # produce a set of clean repository zips for PUT upload.
         zips_dir = tempfile.mkdtemp()
         print("Creating ZIP archives in: %s" % zips_dir)
