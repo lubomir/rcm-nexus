@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # Copyright (c) 2014 Red Hat, Inc..
 # All rights reserved. This program and the accompanying materials
 # are made available under the terms of the GNU Public License v3.0
@@ -11,6 +12,7 @@
 #
 # Authors:
 #    John Casey (jcasey@redhat.com)
+#    Lubomír Sedlář (lsedlar@redhat.com)
 
 from __future__ import print_function
 
@@ -19,6 +21,7 @@ from rcm_nexus.session import Enum
 import os
 import shutil
 import re
+import sys
 
 WRITE_POLICIES = Enum(read_only='READ_ONLY', read_write='ALLOW_WRITE', write_once='ALLOW_WRITE_ONCE')
 REPO_POLICIES = Enum(release='RELEASE', snapshot='SNAPSHOT')
@@ -30,15 +33,51 @@ NAMED_REPO_PATH = REPOS_PATH + '/{key}'
 COMPRESSED_CONTENT_PATH = NAMED_REPO_PATH + "/content-compressed{delete}"
 
 
-def push_zip(session, repo_key, zip_file, delete_first=False):
-    with open(zip_file, 'rb') as f:
-        delete_param = ''
-        if delete_first:
-            delete_param = '?delete=true'
+class progress_report(object):
+    def __init__(self, filepath, mode="rb"):
+        self.file_size = os.path.getsize(filepath)
+        self.read_size = 0
+        self.filepath = filepath
+        self.width = 60
 
-        url = COMPRESSED_CONTENT_PATH.format(key=repo_key, delete=delete_param)
-        if session.debug is True:
-            print("POSTing: %s" % url)
+    def __enter__(self):
+        self.file = open(self.filepath, "rb")
+        self.print("\033[?25l")
+        return self
+
+    def __exit__(self, type_, value, traceback):
+        self.file.close()
+        self.print("\033[?25h\n")
+
+    def print(self, msg):
+        """Print value to stdout if it is attached to a TTY."""
+        if sys.stdout.isatty():
+            sys.stdout.write(msg)
+            sys.stdout.flush()
+
+    def read(self, size=-1):
+        data = self.file.read(size)
+        self.read_size += len(data)
+        perc = int(self.width * self.read_size / self.file_size)
+        consumed_perc = 100 * self.read_size / self.file_size
+        hashes = "#" * perc
+        gap = " " * (self.width - perc)
+        self.print("\r {0:3.0f} % [{1}{2}]".format(consumed_perc, hashes, gap))
+        return data
+
+    def __len__(self):
+        return self.file_size
+
+
+def push_zip(session, repo_key, zip_file, delete_first=False):
+    delete_param = ''
+    if delete_first:
+        delete_param = '?delete=true'
+
+    url = COMPRESSED_CONTENT_PATH.format(key=repo_key, delete=delete_param)
+    if session.debug is True:
+        print("POSTing: %s" % url)
+    with progress_report(zip_file) as f:
         session.post(
             url, f, expect_status=201, headers={"Content-Type": "application/zip"}
         )
