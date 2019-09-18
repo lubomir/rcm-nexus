@@ -19,8 +19,8 @@ SSL_VERIFY = 'ssl-verify'
 PREEMPTIVE_AUTH = 'preemptive-auth'
 INTERACTIVE = 'interactive'
 CONFIG_REPO = "config_repo"
-GA_PROMOTE_PROFILE = "ga-promote-profile"
-EA_PROMOTE_PROFILE = "ea-promote-profile"
+GA_PROMOTE_PROFILES = "ga-promote-profiles"
+EA_PROMOTE_PROFILES = "ea-promote-profiles"
 
 GA_STAGING_PROFILE = 'ga'
 EA_STAGING_PROFILE = 'ea'
@@ -64,10 +64,10 @@ class NexusConfig(object):
 
         return profile_id
 
-    def get_promote_profile_id(self, product, is_ga):
+    def get_promote_profile_ids(self, product, is_ga):
         return self.profile_map[product.upper()][
-            GA_PROMOTE_PROFILE if is_ga else EA_PROMOTE_PROFILE
-        ]
+            GA_PROMOTE_PROFILES if is_ga else EA_PROMOTE_PROFILES
+        ].split()
 
     def __str__(self):
         return """RCMNexusConfig [

@@ -86,11 +86,24 @@ def push(repo, environment, product, version, ga=False, debug=False):
             sys.exit(1)
 
         print("Promoting repo")
-        promote_profile = nexus_config.get_promote_profile_id(product, ga)
-        staging.promote(session, promote_profile, staging_repo_id, product, version, ga)
+        profiles = nexus_config.get_promote_profile_ids(product, ga)
+        promote_entity = None
+        for promote_profile in profiles:
+            if not promote_entity:
+                # First iteration, promote staging repo directly.
+                promote_entity = staging_repo_id
+            else:
+                # On every other iteration promote the group created by
+                # previous promotion.
+                promote_entity = staging.get_next_promote_entity(
+                    session, promote_entity
+                )
+            staging.promote(
+                session, promote_profile, promote_entity, product, version, ga
+            )
 
-        if staging.verify_action(session, staging_repo_id, "promote"):
-            sys.exit(1)
+            if staging.verify_action(session, promote_entity, "promote"):
+                sys.exit(1)
     except requests.exceptions.HTTPError as exc:
         if debug:
             raise
