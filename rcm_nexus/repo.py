@@ -57,12 +57,12 @@ class progress_report(object):
 
     def read(self, size=-1):
         data = self.file.read(size)
-        self.read_size += len(data)
         perc = int(self.width * self.read_size / self.file_size)
         consumed_perc = 100 * self.read_size / self.file_size
         hashes = "#" * perc
         gap = " " * (self.width - perc)
         self.print("\r {0:3.0f} % [{1}{2}]".format(consumed_perc, hashes, gap))
+        self.read_size += len(data)
         return data
 
     def __len__(self):
