@@ -51,7 +51,7 @@ class NexusConfig(object):
         return self.password
 
     def get_profile_id(self, product, is_ga):
-        profiles = self.profile_map.get(product)
+        profiles = self.profile_map.get(product.upper())
         if profiles is None:
             raise Exception( "No staging profiles found for: '%s' in environment: %s" % (product, self.name) )
 
@@ -65,7 +65,9 @@ class NexusConfig(object):
         return profile_id
 
     def get_promote_profile_id(self, product, is_ga):
-        return self.profile_map[product][GA_PROMOTE_PROFILE if is_ga else EA_PROMOTE_PROFILE]
+        return self.profile_map[product.upper()][
+            GA_PROMOTE_PROFILE if is_ga else EA_PROMOTE_PROFILE
+        ]
 
     def __str__(self):
         return """RCMNexusConfig [
@@ -126,7 +128,7 @@ def _read_config(path):
     with open(path) as f:
         parser.readfp(f)
     for product in parser.sections():
-        result[product] = dict(parser.items(product))
+        result[product.upper()] = dict(parser.items(product))
     return result
 
 
