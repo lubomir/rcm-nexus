@@ -52,6 +52,13 @@ def create_partitioned_zips_from_zip(
     directory and only repackage its contents. If there is no such
     subdirectory, all content will be taken without any changes.
     The top-level directory name does not matter at all.
+
+    Alternatively, the content to be published can be directly under the
+    top-level directory. In such case the top-level directory is dropped and
+    everything else is published.
+
+    If there is more than one top-level entry in the archive, an error is
+    reported.
     """
     zips = Zipper(out_dir, max_count, max_size)
     zf = zipfile.ZipFile(src)
@@ -85,6 +92,9 @@ def create_partitioned_zips_from_zip(
             else:
                 # Not correct location, ignore it.
                 continue
+        else:
+            # Otherwise we only strip the leading component.
+            filename = filename.split("/", 1)[-1]
 
         zips.append(filename, info.file_size, lambda: zf.read(info.filename))
 
