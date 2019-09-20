@@ -65,16 +65,20 @@ def create_partitioned_zips_from_zip(
     repodir = None
 
     zip_objects = zf.infolist()
+    toplevel_objects = set()
 
     # Find if there is a maven-repository subdir under top-level directory.
     for info in zip_objects:
         parts = info.filename.split("/")
+        toplevel_objects.add(parts[0])
         if len(parts) < 3:
             # Not a subdirectory of top-level dir or a file in there.
             continue
         if parts[1] == "maven-repository":
             repodir = os.path.join(*parts[:2]) + "/"
-            break
+
+    if len(toplevel_objects) > 1:
+        raise RuntimeError("Invalid zip file: there are multiple top-level entries.")
 
     # Iterate over all objects in the directory.
     for info in zip_objects:

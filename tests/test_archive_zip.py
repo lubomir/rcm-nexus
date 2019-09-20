@@ -27,6 +27,22 @@ class ArchiveZipest(NexupBaseTest):
             sorted(os.path.join(*path.split("/")[1:]) for path in paths),
         )
 
+    def test_multiple_top_level_entries(self):
+        self.load_words()
+
+        paths = ["path/one.txt", "another/two.txt"]
+
+        (_f, src_zip) = tempfile.mkstemp(suffix=".zip")
+
+        self.write_zip(src_zip, paths)
+
+        outdir = tempfile.mkdtemp()
+        try:
+            archive.create_partitioned_zips_from_zip(src_zip, outdir)
+            self.fail("RuntimeError not raised")
+        except RuntimeError as exc:
+            self.assertIn("multiple top-level entries", str(exc))
+
     def test_trim_maven_dir(self):
         self.load_words()
 

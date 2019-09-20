@@ -107,6 +107,11 @@ def push(repo, environment, product, version, ga=False, debug=False):
 
             if staging.verify_action(session, promote_entity, "promote"):
                 sys.exit(1)
+    except RuntimeError as exc:
+        if debug:
+            raise
+        print("Error: %s" % exc, file=sys.stderr)
+        sys.exit(1)
     except requests.exceptions.HTTPError as exc:
         if debug:
             raise
