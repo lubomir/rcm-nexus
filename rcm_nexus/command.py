@@ -66,8 +66,11 @@ def push(repo, environment, product, version, ga=False, debug=False):
         else:
             print("Processing repository zip archive: %s" % repo)
 
-            # Open the zip, walk the entries and normalize the structure to clean zip (if necessary)
-            zip_paths = archive.create_partitioned_zips_from_zip(repo, zips_dir)
+            # Open the zip, walk the entries and normalize the structure to
+            # clean zip
+            zip_paths = archive.create_partitioned_zips_from_zip(
+                repo, zips_dir, debug=debug
+            )
 
         # Open new staging repository with description
         staging_repo_id = staging.start_staging_repo(session, nexus_config, product, version, ga)

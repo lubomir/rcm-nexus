@@ -34,7 +34,7 @@ def create_partitioned_zips_from_dir(
 
 
 def create_partitioned_zips_from_zip(
-    src, out_dir, max_count=MAX_COUNT, max_size=MAX_SIZE
+    src, out_dir, max_count=MAX_COUNT, max_size=MAX_SIZE, debug=False
 ):
     """
     Given a zip archive, split it into smaller chunks and possibly filter out
@@ -96,6 +96,8 @@ def create_partitioned_zips_from_zip(
             # Otherwise we only strip the leading component.
             filename = filename.split("/", 1)[-1]
 
+        if debug:
+            print("Mapping %s -> %s" % (info.filename, filename))
         zips.append(filename, info.file_size, lambda: zf.read(info.filename))
 
     return zips.list()
