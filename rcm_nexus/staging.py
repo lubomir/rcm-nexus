@@ -100,8 +100,9 @@ def verify_action(session, repo_id, action_name):
     response.raise_for_status()
     for action in response.json():
         if action["name"] == action_name:
-            if "events" not in action:
-                # No events yet, try downloading again
+            if "events" not in action or "stopped" not in action:
+                # No events or action was not stopped yet, try downloading
+                # again.
                 time.sleep(3)
                 return verify_action(session, repo_id, action_name)
             for event in action["events"]:
@@ -117,3 +118,22 @@ def verify_action(session, repo_id, action_name):
         return verify_action(session, repo_id, action_name)
 
     return has_errors
+
+
+def get_next_promote_entity(session, obj_id):
+    """Go over activity on the given repository and find group to which the
+    object was promoted. This should only be called once the promote
+    successfully finished.
+    """
+    path = STAGE_REPO_ACTIVITY_FORMAT.format(repo_id=obj_id)
+
+    response, _ = session.get(path, headers={"Accept": "application/json"})
+    response.raise_for_status()
+    for action in response.json():
+        if action["name"] == "promote":
+            for event in action["events"]:
+                if event["name"] == "repositoryPromoted":
+                    for prop in event["properties"]:
+                        if prop["name"] == "group":
+                            return prop["value"]
+    raise RuntimeError("Failed to find the promoted ID.")
