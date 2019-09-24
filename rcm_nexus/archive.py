@@ -34,7 +34,7 @@ def create_partitioned_zips_from_dir(
 
 
 def create_partitioned_zips_from_zip(
-    src, out_dir, max_count=MAX_COUNT, max_size=MAX_SIZE
+    src, out_dir, max_count=MAX_COUNT, max_size=MAX_SIZE, debug=False
 ):
     """
     Given a zip archive, split it into smaller chunks and possibly filter out
@@ -52,22 +52,33 @@ def create_partitioned_zips_from_zip(
     directory and only repackage its contents. If there is no such
     subdirectory, all content will be taken without any changes.
     The top-level directory name does not matter at all.
+
+    Alternatively, the content to be published can be directly under the
+    top-level directory. In such case the top-level directory is dropped and
+    everything else is published.
+
+    If there is more than one top-level entry in the archive, an error is
+    reported.
     """
     zips = Zipper(out_dir, max_count, max_size)
     zf = zipfile.ZipFile(src)
     repodir = None
 
     zip_objects = zf.infolist()
+    toplevel_objects = set()
 
     # Find if there is a maven-repository subdir under top-level directory.
     for info in zip_objects:
         parts = info.filename.split("/")
+        toplevel_objects.add(parts[0])
         if len(parts) < 3:
             # Not a subdirectory of top-level dir or a file in there.
             continue
         if parts[1] == "maven-repository":
             repodir = os.path.join(*parts[:2]) + "/"
-            break
+
+    if len(toplevel_objects) > 1:
+        raise RuntimeError("Invalid zip file: there are multiple top-level entries.")
 
     # Iterate over all objects in the directory.
     for info in zip_objects:
@@ -85,7 +96,12 @@ def create_partitioned_zips_from_zip(
             else:
                 # Not correct location, ignore it.
                 continue
+        else:
+            # Otherwise we only strip the leading component.
+            filename = filename.split("/", 1)[-1]
 
+        if debug:
+            print("Mapping %s -> %s" % (info.filename, filename))
         zips.append(filename, info.file_size, lambda: zf.read(info.filename))
 
     return zips.list()

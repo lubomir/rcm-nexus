@@ -1,5 +1,7 @@
 from __future__ import print_function
 
+import os
+
 from rcm_nexus import archive
 from .base import NexupBaseTest
 import tempfile
@@ -22,8 +24,24 @@ class ArchiveZipest(NexupBaseTest):
 
         self.assertEqual(
             sorted(info.filename for info in zipfile.ZipFile(zips[0]).infolist()),
-            sorted(paths),
+            sorted(os.path.join(*path.split("/")[1:]) for path in paths),
         )
+
+    def test_multiple_top_level_entries(self):
+        self.load_words()
+
+        paths = ["path/one.txt", "another/two.txt"]
+
+        (_f, src_zip) = tempfile.mkstemp(suffix=".zip")
+
+        self.write_zip(src_zip, paths)
+
+        outdir = tempfile.mkdtemp()
+        try:
+            archive.create_partitioned_zips_from_zip(src_zip, outdir)
+            self.fail("RuntimeError not raised")
+        except RuntimeError as exc:
+            self.assertIn("multiple top-level entries", str(exc))
 
     def test_trim_maven_dir(self):
         self.load_words()
@@ -59,11 +77,11 @@ class ArchiveZipest(NexupBaseTest):
 
         self.assertEqual(
             sorted(info.filename for info in zipfile.ZipFile(zips[0]).infolist()),
-            paths[:2],
+            sorted(os.path.join(*path.split("/")[1:]) for path in paths[:2]),
         )
         self.assertEqual(
             sorted(info.filename for info in zipfile.ZipFile(zips[1]).infolist()),
-            paths[2:],
+            sorted(os.path.join(*path.split("/")[1:]) for path in paths[2:]),
         )
 
     def test_size_rollover(self):
@@ -84,9 +102,9 @@ class ArchiveZipest(NexupBaseTest):
 
         self.assertEqual(
             sorted(info.filename for info in zipfile.ZipFile(zips[0]).infolist()),
-            paths[:2],
+            sorted(os.path.join(*path.split("/")[1:]) for path in paths[:2]),
         )
         self.assertEqual(
             sorted(info.filename for info in zipfile.ZipFile(zips[1]).infolist()),
-            paths[2:],
+            sorted(os.path.join(*path.split("/")[1:]) for path in paths[2:]),
         )
