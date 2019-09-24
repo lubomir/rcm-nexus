@@ -1,7 +1,8 @@
-from .command import push, rollback, init
+from .command import push, rollback, init, list_products
 
 __all__ = [
     'init',
     'push',
-    'rollback'
+    'rollback',
+    'list_products',
 ]

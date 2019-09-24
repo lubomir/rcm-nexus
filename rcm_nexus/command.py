@@ -149,3 +149,26 @@ def rollback(staging_repo_name, environment, debug=False):
     finally:
         if session is not None:
             session.close()
+
+
+@click.command()
+@click.option(
+    "--environment",
+    "-e",
+    help="The target Nexus environment (from config file)",
+    default="prod",
+)
+def list_products(environment):
+    nexus_config = config.load(environment)
+    fmt = "%-20s%-20s%-20s"
+    if sys.stdout.isatty():
+        print("\033[1m" + (fmt % ("Product", "EA", "GA")) + "\033[0m")
+    for product in sorted(nexus_config.profile_map.keys()):
+        print(
+            fmt
+            % (
+                product,
+                nexus_config.get_profile_id(product, is_ga=False),
+                nexus_config.get_profile_id(product, is_ga=True),
+            )
+        )
