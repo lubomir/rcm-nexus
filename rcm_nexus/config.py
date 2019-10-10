@@ -19,11 +19,23 @@ SSL_VERIFY = 'ssl-verify'
 PREEMPTIVE_AUTH = 'preemptive-auth'
 INTERACTIVE = 'interactive'
 CONFIG_REPO = "config_repo"
+WRITE_CONFIG_REPO = "write_config_repo"
 GA_PROMOTE_PROFILES = "ga-promote-profiles"
 EA_PROMOTE_PROFILES = "ea-promote-profiles"
 
+TARGET_GROUPS_GA = "target_groups_ga"
+TARGET_GROUPS_EA = "target_groups_ea"
+PROMOTE_RULESET_GA = "promote_ruleset_ga"
+PROMOTE_RULESET_EA = "promote_ruleset_ea"
+PROMOTE_TARGET_GA = "promote_target_ga"
+PROMOTE_TARGET_EA = "promote_target_ea"
+DEPLOYER_ROLE = "deployer_role"
+
 GA_STAGING_PROFILE = 'ga'
 EA_STAGING_PROFILE = 'ea'
+
+IS_GA = True
+IS_EA = not IS_GA
 
 DEFAULTS = {
     SSL_VERIFY: "yes",
@@ -43,6 +55,20 @@ class NexusConfig(object):
         self.username = data.get(name, USERNAME)
         self.password = data.get(name, PASSWORD)
         self.interactive = data.getboolean(name, INTERACTIVE)
+        self.target_groups = {
+            IS_GA: data.get(SECTION, TARGET_GROUPS_GA),
+            IS_EA: data.get(SECTION, TARGET_GROUPS_EA),
+        }
+        self.promote_ruleset = {
+            IS_GA: data.get(SECTION, PROMOTE_RULESET_GA),
+            IS_EA: data.get(SECTION, PROMOTE_RULESET_EA),
+        }
+        self.promote_target = {
+            IS_GA: data.get(SECTION, PROMOTE_TARGET_GA),
+            IS_EA: data.get(SECTION, PROMOTE_TARGET_EA),
+        }
+        self.deployer_role = data.get(SECTION, DEPLOYER_ROLE)
+        self.write_remote_repo = data.get(SECTION, WRITE_CONFIG_REPO)
         self.profile_map = profile_data
 
     def get_password(self):
@@ -103,20 +129,26 @@ def read_config(repo_url):
     If needed, a Git repo will be cloned and the file read from there.
     """
     if "://" in repo_url:
-        return _clone_config_repo(repo_url)
+        return _read_remote_repo(repo_url)
     return _read_config(repo_url)
 
 
-def _clone_config_repo(repo_url):
+def _clone_config_repo(destination, repo_url, limit_depth=True):
+    """Clone a git repository into a given location."""
+    cmd = ["git", "clone"]
+    if limit_depth:
+        cmd.append("--depth=1")
+    subprocess.check_call(
+        cmd + [repo_url, destination], stdout=subprocess.PIPE, stderr=subprocess.PIPE
+    )
+
+
+def _read_remote_repo(repo_url):
     """Clone a git repository and read rcm-nexus.conf from there."""
     tempdir = tempfile.mkdtemp(prefix="rcm-nexus-config-")
     clone_dir = os.path.join(tempdir, "clone")
     try:
-        subprocess.check_call(
-            ["git", "clone", "--depth=1", repo_url, clone_dir],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-        )
+        _clone_config_repo(clone_dir, repo_url)
         return _read_config(os.path.join(clone_dir, "rcm-nexus.conf"))
     finally:
         shutil.rmtree(tempdir)
@@ -130,6 +162,41 @@ def _read_config(path):
     for product in parser.sections():
         result[product.upper()] = dict(parser.items(product))
     return result
+
+
+def add_product(config, environment, key, ids):
+    tempdir = tempfile.mkdtemp(prefix="rcm-nexus-config-")
+    clone_dir = os.path.join(tempdir, "clone")
+    remote_url = config.write_remote_repo.format(user=config.username)
+    try:
+        print("Cloning remote git configuration repository...")
+        _clone_config_repo(clone_dir, remote_url, limit_depth=False)
+        print("Adding new configuration entries...")
+        parser = configparser.RawConfigParser()
+        with open(os.path.join(clone_dir, "rcm-nexus.conf")) as f:
+            parser.readfp(f)
+        if not parser.has_section(key):
+            parser.add_section(key)
+        parser.set(key, "ga", ids[IS_GA])
+        parser.set(key, "ea", ids[IS_EA])
+        with open(os.path.join(clone_dir, "rcm-nexus.conf"), "w") as f:
+            parser.write(f)
+        print("Commiting the changes...")
+        subprocess.check_call(
+            ["git", "commit", "-a", "-m", "%s added" % key],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            cwd=clone_dir,
+        )
+        print("Pushing changes to remote repo...")
+        subprocess.check_call(
+            ["git", "push", "origin", "master"],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            cwd=clone_dir,
+        )
+    finally:
+        shutil.rmtree(tempdir)
 
 
 def init_config():
