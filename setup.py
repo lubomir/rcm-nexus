@@ -64,6 +64,7 @@ setup(
         'nexus-rollback = rcm_nexus:rollback',
         'nexus-init = rcm_nexus:init',
         'nexus-list-products = rcm_nexus:list_products',
+        "nexus-add-product = rcm_nexus:add_product",
       ],
     }
 )

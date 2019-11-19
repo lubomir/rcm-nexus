@@ -83,6 +83,14 @@ class NexupBaseTest(unittest.TestCase):
         parser = configparser.RawConfigParser()
         parser.add_section(config.SECTION)
         parser.set(config.SECTION, config.CONFIG_REPO, profile_mappings)
+        parser.set(config.SECTION, config.WRITE_CONFIG_REPO, profile_mappings)
+        parser.set(config.SECTION, config.TARGET_GROUPS_GA, "tgt-grp-ga")
+        parser.set(config.SECTION, config.TARGET_GROUPS_EA, "tgt-grp-ea")
+        parser.set(config.SECTION, config.PROMOTE_RULESET_GA, "promote-rules-ga")
+        parser.set(config.SECTION, config.PROMOTE_RULESET_EA, "promote-rules-ea")
+        parser.set(config.SECTION, config.PROMOTE_TARGET_GA, "promote-tgt-ga")
+        parser.set(config.SECTION, config.PROMOTE_TARGET_EA, "promote-tgt-ea")
+        parser.set(config.SECTION, config.DEPLOYER_ROLE, "deployer-role")
         for env in conf:
             parser.add_section(env)
             for key, value in conf[env].items():

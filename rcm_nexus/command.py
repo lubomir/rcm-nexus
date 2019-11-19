@@ -12,6 +12,8 @@ import requests
 import shutil
 import tempfile
 
+from .product import create_product, modify_permissions
+
 
 @click.command()
 def init():
@@ -172,3 +174,82 @@ def list_products(environment):
                 nexus_config.get_profile_id(product, is_ga=True),
             )
         )
+
+
+@click.command()
+@click.argument("product_name")
+@click.argument("product_key")
+@click.option(
+    "--environment",
+    "-e",
+    help="The target Nexus environment (from config file)",
+    default="prod",
+)
+@click.option(
+    "--target-group",
+    help=(
+        "Which target groups should contain artifacts from this product "
+        "before promotion"
+    ),
+)
+@click.option(
+    "--promote-ruleset",
+    help=(
+        "Identifier of the rule sets that will validate when attempting to promote "
+        "the release to MRRC"
+    ),
+)
+@click.option(
+    "--promotion-target",
+    help=(
+        "The repository where the artifacts will be cleaned up after it is safe "
+        "to move them from the temporary status"
+    ),
+)
+@click.option("--debug", "-D", is_flag=True, default=False)
+def add_product(
+    product_name,
+    product_key,
+    environment,
+    target_group,
+    promote_ruleset,
+    promotion_target,
+    debug,
+):
+    """Creates a new product in Nexus and updates configuration so it can be used.
+
+    PRODUCT_NAME is the name used by the Nexus service
+
+    PRODUCT_KEY is the shorthand used to reference the product by rcm-nexus tools
+    """
+    ids = {}
+    nexus_config = config.load(environment, debug=debug)
+    session = Session(nexus_config, debug=debug)
+    print("Creating product in Nexus...")
+    try:
+        ids = {
+            config.IS_GA: create_product(
+                session,
+                product_name,
+                target_group or nexus_config.target_groups[config.IS_GA],
+                promote_ruleset or nexus_config.promote_ruleset[config.IS_GA],
+                promotion_target or nexus_config.promote_target[config.IS_GA],
+            ),
+            config.IS_EA: create_product(
+                session,
+                product_name + " Early Access",
+                target_group or nexus_config.target_groups[config.IS_EA],
+                promote_ruleset or nexus_config.promote_ruleset[config.IS_EA],
+                promotion_target or nexus_config.promote_target[config.IS_EA],
+            ),
+        }
+    except requests.exceptions.HTTPError:
+        if debug:
+            raise
+        sys.exit(1)
+
+    print("Updating permissions")
+    for product_id in ids.values():
+        modify_permissions(session, product_id, nexus_config.deployer_role)
+
+    config.add_product(nexus_config, environment, product_key, ids)

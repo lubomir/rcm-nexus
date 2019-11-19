@@ -108,6 +108,10 @@ class Session(object):
                 "maintainers of the Nexus instance you are trying to use.",
                 file=sys.stderr,
             )
+        if response.headers.get("Content-Type", "").startswith("application/json"):
+            data = response.json()
+            for error in data["errors"]:
+                print(error["msg"], file=sys.stderr)
         if fail:
             response.raise_for_status()
         return (response, None)
