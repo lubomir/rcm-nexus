@@ -167,7 +167,7 @@ def _read_config(path):
 def add_product(config, environment, key, ids):
     tempdir = tempfile.mkdtemp(prefix="rcm-nexus-config-")
     clone_dir = os.path.join(tempdir, "clone")
-    remote_url = config.write_remote_repo.format(user=config.username)
+    remote_url = config.write_remote_repo.format(user=config.username.split("@")[0])
     try:
         print("Cloning remote git configuration repository...")
         _clone_config_repo(clone_dir, remote_url, limit_depth=False)
