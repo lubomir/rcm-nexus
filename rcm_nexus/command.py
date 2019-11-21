@@ -252,4 +252,13 @@ def add_product(
     for product_id in ids.values():
         modify_permissions(session, product_id, nexus_config.deployer_role)
 
-    config.add_product(nexus_config, environment, product_key, ids)
+    try:
+        config.add_product(nexus_config, environment, product_key, ids)
+    except Exception as exc:
+        print("Failed to update configuration repo: %s" % exc, file=sys.stderr)
+        print("Add the following manually:", file=sys.stderr)
+        print(
+            "\n[%s]\nga = %s\nea = %s\n"
+            % (product_key, ids[config.IS_GA], ids[config.IS_EA])
+        )
+        sys.exit(1)
