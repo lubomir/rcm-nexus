@@ -19,7 +19,7 @@ from .product import create_product, modify_permissions
 def init():
     """Create a starter configuration for rcm-nexus.
 
-    More Information: https://mojo.redhat.com/docs/DOC-1132234
+    More information: https://mojo.redhat.com/docs/DOC-1199638
     """
     conf_path = config.init_config()
     print("""Wrote starter config to:
@@ -31,10 +31,10 @@ def init():
     - Set url to git repository with product configuration.
     - Fine tune each environment's configuration (username, ssl-verify, etc.).
     - Setup passwords (`pass` is a nice tool for this) to match the configured password keys.
-    
-    For more information on using rcm-nexus (nexus-push, nexus-rollback), see:
 
-    https://mojo.redhat.com/docs/DOC-1132234
+    For more information on using rcm-nexus (nexus-push etc.), see:
+
+    https://mojo.redhat.com/docs/DOC-1199638
     """ % conf_path)
 
 @click.command()
@@ -53,7 +53,7 @@ def push(repo, environment, product, version, ga=False, debug=False):
     """Push Apache Maven repository content to a Nexus staging repository, 
     then add the staging repository to appropriate content groups.
 
-    More Information: https://mojo.redhat.com/docs/DOC-1132234
+    More information: https://mojo.redhat.com/docs/DOC-1199638
     """
 
     nexus_config = config.load(environment, debug=debug)
@@ -138,7 +138,7 @@ def push(repo, environment, product, version, ga=False, debug=False):
 def rollback(staging_repo_name, environment, debug=False):
     """Drop given staging repository.
 
-    More Information: https://mojo.redhat.com/docs/DOC-1132234
+    More information: https://mojo.redhat.com/docs/DOC-1199638
     """
     nexus_config = config.load(environment, debug=debug)
 
@@ -226,6 +226,8 @@ def add_product(
     PRODUCT_NAME is the name used by the Nexus service
 
     PRODUCT_KEY is the shorthand used to reference the product by rcm-nexus tools
+
+    More information: https://mojo.redhat.com/docs/DOC-1199638
     """
     ids = {}
     nexus_config = config.load(environment, debug=debug)
