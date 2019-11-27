@@ -39,7 +39,12 @@ def init():
 
 @click.command()
 @click.argument('repo', type=click.Path(exists=True))
-@click.option('--environment', '-e', help='The target Nexus environment (from config file)')
+@click.option(
+    "--environment",
+    "-e",
+    help="The target Nexus environment (from config file)",
+    default="prod",
+)
 @click.option('--product', '-p', help='The product key, used to lookup profileId from the configuration')
 @click.option('--version', '-v', help='The product version, used in repository definition metadata')
 @click.option('--ga', '-g', is_flag=True, default=False, help='Push content to the GA group (as opposed to earlyaccess)')
