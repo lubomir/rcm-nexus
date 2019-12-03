@@ -1,11 +1,13 @@
 from __future__ import print_function
 
+import contextlib
 import getpass
 import subprocess
 import os
 import shutil
 import sys
 import tempfile
+import textwrap
 
 from six.moves import configparser
 
@@ -164,39 +166,61 @@ def _read_config(path):
     return result
 
 
-def add_product(config, environment, key, ids):
+@contextlib.contextmanager
+def cloned_repo(config):
     tempdir = tempfile.mkdtemp(prefix="rcm-nexus-config-")
     clone_dir = os.path.join(tempdir, "clone")
     remote_url = config.write_remote_repo.format(user=config.username.split("@")[0])
     try:
         print("Cloning remote git configuration repository...")
         _clone_config_repo(clone_dir, remote_url, limit_depth=False)
-        print("Adding new configuration entries...")
-        parser = configparser.RawConfigParser()
-        with open(os.path.join(clone_dir, "rcm-nexus.conf")) as f:
-            parser.readfp(f)
-        if not parser.has_section(key):
-            parser.add_section(key)
-        parser.set(key, "ga", ids[IS_GA])
-        parser.set(key, "ea", ids[IS_EA])
-        with open(os.path.join(clone_dir, "rcm-nexus.conf"), "w") as f:
-            parser.write(f)
-        print("Commiting the changes...")
-        subprocess.check_call(
-            ["git", "commit", "-a", "-m", "%s added" % key],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            cwd=clone_dir,
+        yield clone_dir
+    except Exception:
+        xdg_config_home = (
+            os.environ.get("XDG_CONFIG_HOME") or os.path.expanduser("~/.config")
         )
-        print("Pushing changes to remote repo...")
-        subprocess.check_call(
-            ["git", "push", "origin", "master"],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            cwd=clone_dir,
+        error = textwrap.dedent(
+            """
+            Failed to clone configuration repository from writable URL:
+              {0}
+
+            Modify {1}/rcm-nexus.conf and add following snippet with correct
+            URL to which it is possible to push a new commit.
+
+            [{2}]
+            write_config_repo = FILL_ME
+            """.format(remote_url, xdg_config_home, SECTION)
         )
+        raise RuntimeError(error)
     finally:
         shutil.rmtree(tempdir)
+
+
+def add_product(clone_dir, key, ids):
+    print("Adding new configuration entries...")
+    parser = configparser.RawConfigParser()
+    with open(os.path.join(clone_dir, "rcm-nexus.conf")) as f:
+        parser.readfp(f)
+    if not parser.has_section(key):
+        parser.add_section(key)
+    parser.set(key, "ga", ids[IS_GA])
+    parser.set(key, "ea", ids[IS_EA])
+    with open(os.path.join(clone_dir, "rcm-nexus.conf"), "w") as f:
+        parser.write(f)
+    print("Commiting the changes...")
+    subprocess.check_call(
+        ["git", "commit", "-a", "-m", "%s added" % key],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        cwd=clone_dir,
+    )
+    print("Pushing changes to remote repo...")
+    subprocess.check_call(
+        ["git", "push", "origin", "master"],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        cwd=clone_dir,
+    )
 
 
 def init_config():

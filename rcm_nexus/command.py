@@ -232,40 +232,49 @@ def add_product(
     ids = {}
     nexus_config = config.load(environment, debug=debug)
     session = Session(nexus_config, debug=debug)
-    print("Creating product in Nexus...")
+
     try:
-        ids = {
-            config.IS_GA: create_product(
-                session,
-                product_name,
-                target_group or nexus_config.target_groups[config.IS_GA],
-                promote_ruleset or nexus_config.promote_ruleset[config.IS_GA],
-                promotion_target or nexus_config.promote_target[config.IS_GA],
-            ),
-            config.IS_EA: create_product(
-                session,
-                product_name + " Early Access",
-                target_group or nexus_config.target_groups[config.IS_EA],
-                promote_ruleset or nexus_config.promote_ruleset[config.IS_EA],
-                promotion_target or nexus_config.promote_target[config.IS_EA],
-            ),
-        }
-    except requests.exceptions.HTTPError:
+        with config.cloned_repo(nexus_config) as cloned_repo:
+
+            print("Creating product in Nexus...")
+            try:
+                ids = {
+                    config.IS_GA: create_product(
+                        session,
+                        product_name,
+                        target_group or nexus_config.target_groups[config.IS_GA],
+                        promote_ruleset or nexus_config.promote_ruleset[config.IS_GA],
+                        promotion_target or nexus_config.promote_target[config.IS_GA],
+                    ),
+                    config.IS_EA: create_product(
+                        session,
+                        product_name + " Early Access",
+                        target_group or nexus_config.target_groups[config.IS_EA],
+                        promote_ruleset or nexus_config.promote_ruleset[config.IS_EA],
+                        promotion_target or nexus_config.promote_target[config.IS_EA],
+                    ),
+                }
+            except requests.exceptions.HTTPError:
+                if debug:
+                    raise
+                sys.exit(1)
+
+            print("Updating permissions")
+            for product_id in ids.values():
+                modify_permissions(session, product_id, nexus_config.deployer_role)
+
+            try:
+                config.add_product(cloned_repo, product_key, ids)
+            except Exception as exc:
+                print("Failed to update configuration repo: %s" % exc, file=sys.stderr)
+                print("Add the following manually:", file=sys.stderr)
+                print(
+                    "\n[%s]\nga = %s\nea = %s\n"
+                    % (product_key, ids[config.IS_GA], ids[config.IS_EA])
+                )
+                sys.exit(1)
+    except RuntimeError as exc:
         if debug:
             raise
-        sys.exit(1)
-
-    print("Updating permissions")
-    for product_id in ids.values():
-        modify_permissions(session, product_id, nexus_config.deployer_role)
-
-    try:
-        config.add_product(nexus_config, environment, product_key, ids)
-    except Exception as exc:
-        print("Failed to update configuration repo: %s" % exc, file=sys.stderr)
-        print("Add the following manually:", file=sys.stderr)
-        print(
-            "\n[%s]\nga = %s\nea = %s\n"
-            % (product_key, ids[config.IS_GA], ids[config.IS_EA])
-        )
+        print(str(exc), file=sys.stderr)
         sys.exit(1)
