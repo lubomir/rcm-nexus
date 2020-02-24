@@ -192,3 +192,14 @@ class Session(object):
             return (response,response.text)
         else:
             return self._handle_error(response, path, fail)
+
+    def stream_remote(self, url):
+        """Download content from URL and generate chunks from the response. The
+        URL should be provided as absolute URL including domain name.
+        """
+        with requests.get(url, auth=self.auth, stream=True) as resp:
+            if resp.status_code >= 400 and resp.status_code != 404:
+                self._handle_error(resp, url, fail=True)
+            if resp.status_code != 404:
+                for chunk in resp.iter_content(None):
+                    yield chunk
