@@ -33,6 +33,56 @@ def create_partitioned_zips_from_dir(
     return zips.list()
 
 
+def _find_top_level(zip_objects):
+    repodir = None
+    toplevel_objects = set()
+
+    # Find if there is a maven-repository subdir under top-level directory.
+    for info in zip_objects:
+        parts = info.filename.split("/")
+        toplevel_objects.add(parts[0])
+        if len(parts) < 3:
+            # Not a subdirectory of top-level dir or a file in there.
+            continue
+        if parts[1] == "maven-repository":
+            repodir = os.path.join(*parts[:2]) + "/"
+
+    if len(toplevel_objects) > 1:
+        raise RuntimeError("Invalid zip file: there are multiple top-level entries.")
+
+    return repodir
+
+
+def iterate_zip_content(zf, debug=False):
+    zip_objects = zf.infolist()
+    # Find which directory should be uploaded.
+    repodir = _find_top_level(zip_objects)
+
+    # Iterate over all objects in the directory.
+    for info in zip_objects:
+        if info.filename.endswith("/") and info.file_size == 0:
+            # Skip directories for this iteration.
+            continue
+
+        filename = info.filename
+        # We found maven-repository subdirectory previously, only content from
+        # there should be taken.
+        if repodir:
+            if filename.startswith(repodir):
+                # It's in correct location, move to top-level.
+                filename = filename[len(repodir):]
+            else:
+                # Not correct location, ignore it.
+                continue
+        else:
+            # Otherwise we only strip the leading component.
+            filename = filename.split("/", 1)[-1]
+
+        if debug:
+            print("Mapping %s -> %s" % (info.filename, filename))
+        yield (filename, info.file_size, info.filename)
+
+
 def create_partitioned_zips_from_zip(
     src, out_dir, max_count=MAX_COUNT, max_size=MAX_SIZE, debug=False
 ):
@@ -62,47 +112,9 @@ def create_partitioned_zips_from_zip(
     """
     zips = Zipper(out_dir, max_count, max_size)
     zf = zipfile.ZipFile(src)
-    repodir = None
 
-    zip_objects = zf.infolist()
-    toplevel_objects = set()
-
-    # Find if there is a maven-repository subdir under top-level directory.
-    for info in zip_objects:
-        parts = info.filename.split("/")
-        toplevel_objects.add(parts[0])
-        if len(parts) < 3:
-            # Not a subdirectory of top-level dir or a file in there.
-            continue
-        if parts[1] == "maven-repository":
-            repodir = os.path.join(*parts[:2]) + "/"
-
-    if len(toplevel_objects) > 1:
-        raise RuntimeError("Invalid zip file: there are multiple top-level entries.")
-
-    # Iterate over all objects in the directory.
-    for info in zip_objects:
-        if info.filename.endswith("/") and info.file_size == 0:
-            # Skip directories for this iteration.
-            continue
-
-        filename = info.filename
-        # We found maven-repository subdirectory previously, only content from
-        # there should be taken.
-        if repodir:
-            if filename.startswith(repodir):
-                # It's in correct location, move to top-level.
-                filename = filename[len(repodir):]
-            else:
-                # Not correct location, ignore it.
-                continue
-        else:
-            # Otherwise we only strip the leading component.
-            filename = filename.split("/", 1)[-1]
-
-        if debug:
-            print("Mapping %s -> %s" % (info.filename, filename))
-        zips.append(filename, info.file_size, lambda: zf.read(info.filename))
+    for target, size, source in iterate_zip_content(zf, debug=debug):
+        zips.append(target, size, lambda: zf.read(source))
 
     return zips.list()
 
