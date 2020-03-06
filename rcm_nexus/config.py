@@ -15,6 +15,7 @@ RCM_NEXUS_CONFIG = 'RCM_NEXUS_CONFIG'
 SECTION = "general"
 
 URL = 'url'
+WEB_URL = 'web_url'
 USERNAME = 'username'
 PASSWORD = 'password'
 SSL_VERIFY = 'ssl-verify'
@@ -52,6 +53,10 @@ class NexusConfig(object):
     def __init__(self, name, data, profile_data):
         self.name = name
         self.url = data.get(name, URL)
+        try:
+            self.web_url = data.get(name, WEB_URL)
+        except configparser.NoOptionError:
+            self.web_url = None
         self.ssl_verify = data.getboolean(name, SSL_VERIFY)
         self.preemptive_auth = data.getboolean(name, PREEMPTIVE_AUTH)
         self.username = data.get(name, USERNAME)

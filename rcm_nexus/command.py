@@ -13,6 +13,7 @@ import shutil
 import tempfile
 
 from .product import create_product, modify_permissions
+from . import checker
 
 
 @click.command()
@@ -277,4 +278,31 @@ def add_product(
         if debug:
             raise
         print(str(exc), file=sys.stderr)
+        sys.exit(1)
+
+
+@click.command()
+@click.argument('repo', type=click.Path(exists=True))
+@click.option(
+    "--environment",
+    "-e",
+    help="The target Nexus environment (from config file)",
+    default="prod",
+)
+@click.option('--debug', '-D', is_flag=True, default=False)
+def check(repo, environment, debug=False):
+    nexus_config = config.load(environment, debug=debug)
+    if not nexus_config.web_url:
+        print("Missing option %s in config file" % config.WEB_URL, file=sys.stderr)
+        sys.exit(1)
+    session = Session(nexus_config, debug=debug)
+    if debug:
+        print("Checking file", repo)
+    try:
+        if not checker.check_zip_file(session, nexus_config.web_url, repo):
+            sys.exit(1)
+    except requests.exceptions.HTTPError as exc:
+        if debug:
+            raise
+        print("Network error: %s" % exc, file=sys.stderr)
         sys.exit(1)
