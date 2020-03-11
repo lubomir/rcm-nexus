@@ -46,6 +46,11 @@ class Enum(object):
     def values(self):
         return self._all_values
 
+
+class FileNotFoundError(RuntimeError):
+    pass
+
+
 def python_boolean(value):
     return True if str(value) in ('True', 'true') else False
 
@@ -198,8 +203,9 @@ class Session(object):
         URL should be provided as absolute URL including domain name.
         """
         with requests.get(url, auth=self.auth, stream=True) as resp:
-            if resp.status_code >= 400 and resp.status_code != 404:
+            if resp.status_code == 404:
+                raise FileNotFoundError()
+            if resp.status_code >= 400:
                 self._handle_error(resp, url, fail=True)
-            if resp.status_code != 404:
-                for chunk in resp.iter_content(None):
-                    yield chunk
+            for chunk in resp.iter_content(None):
+                yield chunk
