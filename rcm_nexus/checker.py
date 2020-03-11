@@ -5,6 +5,7 @@ import sys
 import zipfile
 
 from . import archive
+from .session import FileNotFoundError
 
 
 def _print(msg):
@@ -68,32 +69,34 @@ def check_zip_file(session, base_url, zip_file):
         sha1 = hashlib.sha1()
         sha1.update(content)
 
-        remote_md5 = hashlib.md5()
-        remote_sha1 = hashlib.sha1()
+        try:
+            remote_md5 = hashlib.md5()
+            remote_sha1 = hashlib.sha1()
+            url = base_url + files[file_]["target"]
+            for chunk in session.stream_remote(url):
+                remote_md5.update(chunk)
+                remote_sha1.update(chunk)
 
-        url = base_url + files[file_]["target"]
-        for chunk in session.stream_remote(url):
-            remote_md5.update(chunk)
-            remote_sha1.update(chunk)
-
-        md5_correct = md5.digest() == remote_md5.digest()
-        sha1_correct = sha1.digest() == remote_sha1.digest()
-        if not (md5_correct and sha1_correct):
-            print(
-                "File %s already uploaded with different checksum" % file_,
-                file=sys.stderr,
-            )
-            all_ok = False
+            md5_correct = md5.digest() == remote_md5.digest()
+            sha1_correct = sha1.digest() == remote_sha1.digest()
+            if not (md5_correct and sha1_correct):
+                print(
+                    "File %s already uploaded with different checksum" % file_,
+                    file=sys.stderr,
+                )
+                all_ok = False
+        except FileNotFoundError:
+            pass
 
         md5_file = file_ + ".md5"
         sha1_file = file_ + ".sha1"
         if (md5_file in files) != (sha1_file in files):
             print("\rIncomplete checksums for %s" % file_, file=sys.stderr)
             all_ok = False
-        if md5_file in files and zf.read(md5_file) != md5.hexdigest():
+        if md5_file in files and zf.read(md5_file) != md5.hexdigest().encode():
             print("\rMD5 mismatch: %s" % file_, file=sys.stderr)
             all_ok = False
-        if sha1_file in files and zf.read(sha1_file) != sha1.hexdigest():
+        if sha1_file in files and zf.read(sha1_file) != sha1.hexdigest().encode():
             print("\rSHA1 mismatch: %s" % file_, file=sys.stderr)
             all_ok = False
 
