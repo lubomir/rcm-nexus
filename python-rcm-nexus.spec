@@ -8,9 +8,9 @@ URL:		https://mojo.redhat.com/docs/DOC-1010179
 Source0:	%{name}-%{version}.tar.gz
 
 BuildArch:	noarch
-BuildRequires:	python3-devel python-setuptools
+BuildRequires:	python-devel python-setuptools
 
-Requires:	python3 python-setuptools python-lxml python-requests python-click PyYAML
+Requires:	python python-setuptools python-lxml python-requests python-click PyYAML npm
 
 
 %description
@@ -47,3 +47,4 @@ rm -rf $RPM_BUILD_ROOT
 - NEXUS-331 - Add More Parameter Verification
 - NEXUS-327 - Update List Products to Process npm Profiles Properly
 - NEXUS-340 - Add List of Available Commands to the Utility
+- NEXUS-342 - Backport The New Features to Python 2 due to RHEL 6 Compatibility

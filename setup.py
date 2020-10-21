@@ -16,16 +16,16 @@ long_description = f.read().strip()
 long_description = long_description.split('split here', 1)[1]
 f.close()
 
-test_deps=[
+test_deps = [
     "Mock",
     "nose",
     "responses",
   ]
 
 extras = {
-  'test':test_deps,
-  'build':['tox'],
-  'ci':['coverage']
+  'test': test_deps,
+  'build': ['tox'],
+  'ci': ['coverage']
 }
 
 setup(
@@ -54,6 +54,7 @@ setup(
       "lxml",
       "click",
       "six",
+      "enum34"
     ],
     tests_require=test_deps,
     extras_require=extras,
