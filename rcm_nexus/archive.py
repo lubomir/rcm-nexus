@@ -80,7 +80,7 @@ def iterate_zip_content(zf, debug=False):
 
         if debug:
             print("Mapping %s -> %s" % (info.filename, filename))
-        yield (filename, info.file_size, info.filename)
+        yield filename, info.file_size, info.filename
 
 
 def create_partitioned_zips_from_zip(

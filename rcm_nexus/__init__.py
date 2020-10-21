@@ -1,4 +1,4 @@
-from .command import push, rollback, init, list_products, add_product, check
+from .command import push, rollback, init, list_products, add_product, add_npm_product, check, list_of_commands
 
 __all__ = [
     'init',
@@ -6,5 +6,7 @@ __all__ = [
     'rollback',
     'list_products',
     'add_product',
+    'add_npm_product',
     'check',
+    'list_of_commands'
 ]
