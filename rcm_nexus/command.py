@@ -5,13 +5,13 @@ import rcm_nexus.config as config
 import rcm_nexus.repo as repos
 import rcm_nexus.archive as archive
 import rcm_nexus.staging as staging
+import rcm_nexus.npm as npm
 import os.path
 import sys
 import click
 import requests
 import shutil
 import tempfile
-import npm
 import subprocess
 
 from .product import create_product, modify_permissions
