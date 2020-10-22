@@ -8,7 +8,7 @@ import shutil
 import sys
 import tempfile
 import textwrap
-from ConfigParser import NoOptionError, NoSectionError
+from configparser import NoOptionError, NoSectionError
 
 from enum import Enum
 
