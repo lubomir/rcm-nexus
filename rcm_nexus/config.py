@@ -156,7 +156,6 @@ class NexusConfig(object):
             die("Environment "+environment+" does not exist!")
         return default
 
-
     def get_password(self):
         if self.password and self.password.startswith("@oracle:"):
             return eval_password(self.username, oracle=self.password, interactive=self.interactive)
