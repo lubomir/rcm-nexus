@@ -8,7 +8,6 @@ import shutil
 import sys
 import tempfile
 import textwrap
-from configparser import NoOptionError, NoSectionError
 
 from enum import Enum
 
@@ -72,9 +71,9 @@ class NexusConfig(object):
         self.name = name
         try:
             self.url = data.get(name, URL)
-        except NoOptionError:
+        except configparser.NoOptionError:
             die('Deployment URL was not found in the environment {}!'.format(name))
-        except NoSectionError:
+        except configparser.NoSectionError:
             die('Environment "{}" was not found in the configuration file!'.format(name))
 
         try:
@@ -121,12 +120,12 @@ class NexusConfig(object):
         """
         try:
             return data.get(environment, key)
-        except NoOptionError:
+        except configparser.NoOptionError:
             try:
                 return data.get(SECTION, key)
-            except NoOptionError:
+            except configparser.NoOptionError:
                 pass
-        except NoSectionError:
+        except configparser.NoSectionError:
             die("Environment "+environment+" does not exist!")
         return default
 
@@ -147,12 +146,12 @@ class NexusConfig(object):
         """
         try:
             return data.getboolean(environment, key)
-        except NoOptionError:
+        except configparser.NoOptionError:
             try:
                 return data.getboolean(SECTION, key)
-            except NoOptionError:
+            except configparser.NoOptionError:
                 pass
-        except NoSectionError:
+        except configparser.NoSectionError:
             die("Environment "+environment+" does not exist!")
         return default
 
