@@ -66,7 +66,7 @@ setup(
         'nexus-rollback = rcm_nexus:rollback',
         'nexus-init = rcm_nexus:init',
         'nexus-list-products = rcm_nexus:list_products',
-        "nexus-add-product = rcm_nexus:add_product",
+        "nexus-add-java-product = rcm_nexus:add_java_product",
         "nexus-add-npm-product = rcm_nexus:add_npm_product",
         "nexus-check = rcm_nexus:check",
       ],

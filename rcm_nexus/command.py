@@ -48,7 +48,7 @@ def list_of_commands():
 
      - nexus-add-npm-product - adds a new npm product
 
-     - nexus-add-product - adds a new Maven product (and staging profile)
+     - nexus-add-java-product - adds a new Maven product (and staging profile)
 
      - nexus-check - checks Nexus deployment
 
@@ -86,6 +86,7 @@ def push(repo, environment, product, version, ga=False, debug=False):
     nexus_config = config.load(environment)
     npm_archive_type = npm.detect_npm_archive(repo)
     if npm_archive_type != npm.NpmArchiveType.NOT_NPM:
+        # if any npm archive types....
         npm.push(nexus_config, repo, npm_archive_type, product, debug=debug)
     else:
         if nexus_config.get_profile_type(product) != config.ProfileType.JAVA:
@@ -317,7 +318,7 @@ def add_npm_product(product_name, product_key, environment, repository_name, deb
     ),
 )
 @click.option("--debug", "-D", is_flag=True, default=False)
-def add_product(
+def add_java_product(
         product_name,
         product_key,
         environment,
