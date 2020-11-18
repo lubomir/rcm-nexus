@@ -13,7 +13,11 @@ import subprocess
 from .config import DEFAULT_PASSWORD
 
 from enum import Enum
-from hmac import compare_digest
+
+try:
+    from hmac import compare_digest
+except ImportError:
+    from operator import eq as compare_digest
 
 
 class NpmArchiveType(Enum):
