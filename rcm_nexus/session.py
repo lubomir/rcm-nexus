@@ -72,7 +72,7 @@ class Session(object):
         self.headers = {
             'Accept': 'application/xml',
             'Content-Type': 'application/xml',
-#             'User-Agent': Session.USER_AGENT,
+            # 'User-Agent': Session.USER_AGENT,
         }
 
     def close(self):

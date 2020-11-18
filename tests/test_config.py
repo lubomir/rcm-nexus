@@ -10,10 +10,6 @@ from six.moves import configparser
 
 class TestConfigLoad(NexupBaseTest):
 
-    def test_init(self):
-        config.init_config()
-        self.assertRaises(configparser.NoOptionError, config.load, 'prod')
-
     def test_minimal_from_default(self):
         url='http://nowhere.com/nexus'
         data={
@@ -42,7 +38,7 @@ class TestConfigLoad(NexupBaseTest):
         }
 
         rc = self.write_config(data, profile_map)
-        nxconfig = config.load('test', debug=True)
+        nxconfig = config.load('test')
         profile_id = nxconfig.get_profile_id('eap', is_ga=True)
 
         self.assertEqual(profile_id, ga_profile)
@@ -125,10 +121,10 @@ class TestConfigLoad(NexupBaseTest):
         self.assertEqual(nxconfig.password, password)
 
     def test_with_username_and_oracle_password(self):
-        username='myuser'
-        password='mypassword'
-        url='http://nowhere.com/nexus'
-        data={
+        username = 'myuser'
+        password = 'mypassword'
+        url = 'http://nowhere.com/nexus'
+        data = {
             'test': {
                 config.URL: url,
                 config.USERNAME: username,

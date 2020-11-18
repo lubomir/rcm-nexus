@@ -9,23 +9,23 @@ if sys.version_info >= (3,):
 else:
     use_2to3 = False
 
-version = "1.11.0"
+version = "2.0.0"
 
 f = open('README.rst')
 long_description = f.read().strip()
 long_description = long_description.split('split here', 1)[1]
 f.close()
 
-test_deps=[
+test_deps = [
     "Mock",
     "nose",
     "responses",
   ]
 
 extras = {
-  'test':test_deps,
-  'build':['tox'],
-  'ci':['coverage']
+  'test': test_deps,
+  'build': ['tox'],
+  'ci': ['coverage']
 }
 
 setup(
@@ -54,17 +54,20 @@ setup(
       "lxml",
       "click",
       "six",
+      "enum34"
     ],
     tests_require=test_deps,
     extras_require=extras,
     test_suite="tests",
     entry_points={
       'console_scripts': [
+        'nexus = rcm_nexus:list_of_commands',
         'nexus-push = rcm_nexus:push',
         'nexus-rollback = rcm_nexus:rollback',
         'nexus-init = rcm_nexus:init',
         'nexus-list-products = rcm_nexus:list_products',
-        "nexus-add-product = rcm_nexus:add_product",
+        "nexus-add-java-product = rcm_nexus:add_java_product",
+        "nexus-add-npm-product = rcm_nexus:add_npm_product",
         "nexus-check = rcm_nexus:check",
       ],
     }
