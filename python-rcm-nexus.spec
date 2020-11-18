@@ -10,7 +10,7 @@ Source0:	%{name}-%{version}.tar.gz
 BuildArch:	noarch
 BuildRequires:	python-devel python-setuptools
 
-Requires:	python python-setuptools python-lxml python-requests python-click PyYAML npm
+Requires:	python python-setuptools python-lxml python-requests python-click PyYAML npm python-enum34
 
 
 %description
@@ -39,7 +39,7 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
-* Mon Oct 12 2020  David Hladky <dhladky at, redhat.com> 2.0.0
+* Mon Oct 12 2020  David Hladky <dhladky at, redhat.com> 2.0.0-1
 - NEXUS-326 - Implement Push of NPM Modules to Repository
 - NEXUS-329 - Remove Many Warnings in the Code
 - NEXUS-338 - Add Checking for Maven/NPM products
